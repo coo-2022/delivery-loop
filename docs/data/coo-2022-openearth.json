@@ -1,0 +1,88 @@
+{
+  "updated_at": "2026-07-16T00:00:00Z",
+  "repo": {
+    "owner": "coo-2022",
+    "name": "OpenEarth"
+  },
+  "issues": [
+    {
+      "number": 67,
+      "title": "每个域骨架有了之后，具体细节的优化，就靠openearth来自举",
+      "html_url": "https://github.com/coo-2022/OpenEarth/issues/67",
+      "body": "",
+      "labels": [],
+      "user": {
+        "login": "unknown",
+        "avatar_url": ""
+      }
+    },
+    {
+      "number": 53,
+      "title": "或许benchmark这个域的解解法，就是再给定规则的条件下自对弈，例如给定规则解bug，给定规则交需求，给定规则做营销",
+      "html_url": "https://github.com/coo-2022/OpenEarth/issues/53",
+      "body": "",
+      "labels": [],
+      "user": {
+        "login": "unknown",
+        "avatar_url": ""
+      }
+    },
+    {
+      "number": 52,
+      "title": "工具这个状态如何设计？实际上是对外部工具的规范化？以及内部工具的自生成",
+      "html_url": "https://github.com/coo-2022/OpenEarth/issues/52",
+      "body": "",
+      "labels": [],
+      "user": {
+        "login": "unknown",
+        "avatar_url": ""
+      }
+    },
+    {
+      "number": 51,
+      "title": "如何让curator反思自己不知道的不知道，以及知道的不知道？",
+      "html_url": "https://github.com/coo-2022/OpenEarth/issues/51",
+      "body": "",
+      "labels": [],
+      "user": {
+        "login": "unknown",
+        "avatar_url": ""
+      }
+    },
+    {
+      "number": 50,
+      "title": "完善agent的状态",
+      "html_url": "https://github.com/coo-2022/OpenEarth/issues/50",
+      "body": "",
+      "labels": [],
+      "user": {
+        "login": "unknown",
+        "avatar_url": ""
+      }
+    },
+    {
+      "number": 48,
+      "title": "要支持跨agent的状态迁移",
+      "html_url": "https://github.com/coo-2022/OpenEarth/issues/48",
+      "body": "",
+      "labels": [],
+      "user": {
+        "login": "unknown",
+        "avatar_url": ""
+      }
+    },
+    {
+      "number": 45,
+      "title": "Knowledge curator agent (phase-1 deploy: KB ingest + progress + AGENTS.md browse)",
+      "html_url": "https://github.com/coo-2022/OpenEarth/issues/45",
+      "body": "",
+      "labels": [],
+      "user": {
+        "login": "unknown",
+        "avatar_url": ""
+      }
+    }
+  ],
+  "pulls": [],
+  "comments": {}
+}

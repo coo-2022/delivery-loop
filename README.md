@@ -19,6 +19,8 @@ It reads public GitHub issues and PRs directly from the GitHub API and shows:
 - Delivery Loop design proposal and implementation-plan comments;
 - related PRs.
 
+The dashboard loads `docs/data/*.json` snapshots first so the board is not empty when the browser cannot reach GitHub's API. The Refresh button attempts a live GitHub API refresh and keeps the snapshot visible if that request fails. `.github/workflows/update-dashboard-data.yml` refreshes the snapshots on a schedule.
+
 For GitHub Pages, configure this repository to publish from the `docs/` folder. Private repositories will need the future GitHub App/backend mode because the static page does not store tokens.
 
 ## Current P0 shape

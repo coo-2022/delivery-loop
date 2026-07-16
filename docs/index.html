@@ -553,6 +553,7 @@
           name: "OpenEarth",
           description: "First dogfood target project",
           issueTemplate: "issues/new/choose",
+          snapshot: "data/coo-2022-openearth.json",
         },
       ];
 
@@ -597,6 +598,10 @@
           throw new Error(`${response.status} ${response.statusText}`);
         }
         return response.json();
+      }
+
+      async function fetchSnapshot() {
+        return fetchJson(state.repo.snapshot);
       }
 
       function repoSlug(repo = state.repo) {
@@ -715,6 +720,22 @@
         });
       }
 
+      function applyRepoData(payload, source) {
+        state.issues = (payload.issues || []).filter(issue => !issue.pull_request);
+        state.pulls = payload.pulls || [];
+        state.selected = state.issues[0] || null;
+        state.commentsByIssue.clear();
+        for (const [issueNumber, comments] of Object.entries(payload.comments || {})) {
+          state.commentsByIssue.set(Number(issueNumber), comments);
+        }
+        renderRepos();
+        renderBoard();
+        renderDetail();
+        if (state.selected && !state.commentsByIssue.has(state.selected.number) && source === "live") {
+          selectIssue(state.selected.number);
+        }
+      }
+
       function extractPlans(comments) {
         return comments.filter(comment => {
           const body = comment.body || "";
@@ -789,27 +810,33 @@
       }
 
       async function loadRepo() {
-        setStatus("loading", `Loading ${repoSlug()} issues`);
+        setStatus("loading", `Loading ${repoSlug()} snapshot`);
         els.newRequest.href = `https://github.com/${repoSlug()}/${state.repo.issueTemplate}`;
+        try {
+          const snapshot = await fetchSnapshot();
+          applyRepoData(snapshot, "snapshot");
+          const updated = snapshot.updated_at ? ` · snapshot ${new Date(snapshot.updated_at).toLocaleString()}` : "";
+          setStatus("ready", `Loaded ${state.issues.length} requests from snapshot${updated}`);
+        } catch (error) {
+          state.issues = [];
+          state.pulls = [];
+          renderBoard();
+          renderDetail();
+          setStatus("error", `Snapshot load failed: ${error.message}`);
+        }
+      }
+
+      async function refreshLiveRepo() {
+        setStatus("loading", `Refreshing ${repoSlug()} from GitHub`);
         try {
           const [issues, pulls] = await Promise.all([
             fetchJson(api(`/repos/${repoSlug()}/issues?state=open&per_page=100`)),
             fetchJson(api(`/repos/${repoSlug()}/pulls?state=open&per_page=100`)),
           ]);
-          state.issues = issues.filter(issue => !issue.pull_request);
-          state.pulls = pulls;
-          state.selected = state.issues[0] || null;
-          state.commentsByIssue.clear();
-          renderRepos();
-          renderBoard();
-          renderDetail();
-          if (state.selected) selectIssue(state.selected.number);
+          applyRepoData({ issues, pulls, comments: {} }, "live");
           setStatus("ready", `Loaded ${state.issues.length} open requests from ${repoSlug()}`);
         } catch (error) {
-          state.issues = [];
-          state.pulls = [];
-          renderBoard();
-          setStatus("error", `GitHub API error: ${error.message}`);
+          setStatus("error", `Live GitHub refresh failed: ${error.message}. Showing snapshot data.`);
         }
       }
 
@@ -827,7 +854,7 @@
         if (card) selectIssue(card.dataset.issue);
       });
 
-      els.refresh.addEventListener("click", loadRepo);
+      els.refresh.addEventListener("click", refreshLiveRepo);
       els.query.addEventListener("input", renderBoard);
       els.priority.addEventListener("change", renderBoard);
       els.type.addEventListener("change", renderBoard);
