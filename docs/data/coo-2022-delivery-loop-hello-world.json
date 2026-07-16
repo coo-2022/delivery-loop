@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-07-16T00:00:00Z",
+  "updated_at": "2026-07-16T08:39:50.815491+00:00",
   "repo": {
     "owner": "coo-2022",
     "name": "delivery-loop-hello-world"
@@ -9,24 +9,36 @@
       "number": 1,
       "title": "Add enthusiastic greeting mode",
       "html_url": "https://github.com/coo-2022/delivery-loop-hello-world/issues/1",
-      "body": "## Problem\nThe demo app only returns a plain greeting. Add an enthusiastic greeting mode so the Delivery Loop can demonstrate a small agent change.\n\n## Acceptance criteria\n- `greeting(name, enthusiastic=True)` returns `Hello, <name>!!`\n- Existing default behavior remains `Hello, world!`\n- Tests cover both default and enthusiastic behavior\n\n## Constraints\nKeep the implementation small and avoid new dependencies.",
+      "body": "## Problem\nThe demo app only returns a plain greeting. Add an enthusiastic greeting mode so the Delivery Loop can demonstrate a small agent change.\n\n## Acceptance criteria\n- `greeting(name, enthusiastic=True)` returns `Hello, <name>!!`\n- Existing default behavior remains `Hello, world!`\n- Tests cover both default and enthusiastic behavior\n\n## Constraints\nKeep the implementation small and avoid new dependencies.\n",
       "labels": [
         {
           "name": "request:new"
         },
         {
-          "name": "priority:P2"
+          "name": "type:feature"
         },
         {
-          "name": "type:feature"
+          "name": "priority:P2"
         }
       ],
       "user": {
         "login": "coo-2022",
-        "avatar_url": ""
+        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
       }
     }
   ],
-  "pulls": [],
+  "pulls": [
+    {
+      "number": 2,
+      "title": "Add enthusiastic greeting mode",
+      "html_url": "https://github.com/coo-2022/delivery-loop-hello-world/pull/2",
+      "body": "Implements enthusiastic greeting mode for Delivery Loop demo.\n\nCloses #1\n\nValidation:\n- python -m pytest -q",
+      "state": "open",
+      "user": {
+        "login": "coo-2022",
+        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
+      }
+    }
+  ],
   "comments": {}
 }
