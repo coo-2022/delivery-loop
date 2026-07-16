@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-07-16T00:00:00Z",
+  "updated_at": "2026-07-16T03:51:22.323695+00:00",
   "repo": {
     "owner": "coo-2022",
     "name": "OpenEarth"
@@ -12,8 +12,8 @@
       "body": "",
       "labels": [],
       "user": {
-        "login": "unknown",
-        "avatar_url": ""
+        "login": "coo-2022",
+        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
       }
     },
     {
@@ -23,8 +23,8 @@
       "body": "",
       "labels": [],
       "user": {
-        "login": "unknown",
-        "avatar_url": ""
+        "login": "coo-2022",
+        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
       }
     },
     {
@@ -34,8 +34,8 @@
       "body": "",
       "labels": [],
       "user": {
-        "login": "unknown",
-        "avatar_url": ""
+        "login": "coo-2022",
+        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
       }
     },
     {
@@ -45,44 +45,56 @@
       "body": "",
       "labels": [],
       "user": {
-        "login": "unknown",
-        "avatar_url": ""
+        "login": "coo-2022",
+        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
       }
     },
     {
       "number": 50,
       "title": "完善agent的状态",
       "html_url": "https://github.com/coo-2022/OpenEarth/issues/50",
-      "body": "",
+      "body": "比如支持project？支持tool？如何让agent变得更主动？Memory和Knowledge的区别是什么？",
       "labels": [],
       "user": {
-        "login": "unknown",
-        "avatar_url": ""
+        "login": "coo-2022",
+        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
       }
     },
     {
       "number": 48,
       "title": "要支持跨agent的状态迁移",
       "html_url": "https://github.com/coo-2022/OpenEarth/issues/48",
-      "body": "",
+      "body": "比如在claude干着，可以无缝的迁移到codex，或者opencode",
       "labels": [],
       "user": {
-        "login": "unknown",
-        "avatar_url": ""
+        "login": "coo-2022",
+        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
       }
     },
     {
       "number": 45,
       "title": "Knowledge curator agent (phase-1 deploy: KB ingest + progress + AGENTS.md browse)",
       "html_url": "https://github.com/coo-2022/OpenEarth/issues/45",
-      "body": "",
+      "body": "Phase-1 deployment's centerpiece: turn openearth into a system centered on a **Knowledge curator agent**, deployed to claude / opencode / codex.\n\n## Scope (locked)\n- **3 agents**: claude, opencode, codex.\n- **KB ingest**: agent-triggered (`kb-ingest` skill → `openearth knowledge ingest`), async, file-level queue progress.\n- **KB use**: AGENTS.md pointer (installed at plugin-install time, NOT by the curator) → coding agent self-browses `Knowledge/`.\n- **Curator daemon** (the Knowledge agent, same backend as reflect): full-takeover per-file ingest (extract→compile→place), organize, lint, periodic reflect → pending-question queue (anti-spam via Knowledge/ lineage).\n- **Out**: trajectory→skill (phase-2), CS, Tool domain (all deferred).\n\n## Architecture\nSix domains → six logical agents (same tool-using backend; reflect = Skills agent ✅ built, **curator = Knowledge agent** 🔴 this issue). External agents **only call `openearth` CLI** — never touch internal agents/store directly. Progress = a queue **file** under `Knowledge/.queue/` that the curator updates per file and `openearth knowledge progress` reads directly (no agent routing).\n\n## MVP build order\n1. Queue file + `ingest` (non-blocking enqueue) + `progress` (read file) + stub daemon → close the loop \"add folder → query progress\".\n2. Curator daemon per-file full processing (reuse `dataconnector` / `KnowledgeCompiler`, migrate to skill-driven).\n3. `kb-ingest` skill + install-time pointer.\n4. Curator-ledger (domain lineage) + periodic reflect + pending-question queue.\n5. (later) Tool domain, Trajectory/Benchmark/Memory agents; extract the \"domain-agent\" framework from reflect+curator.\n\n## Full design\nSee [docs/knowledge-curator-design.md](https://github.com/coo-2022/OpenEarth/blob/docs/knowledge-curator-design/docs/knowledge-curator-design.md) (on the `docs/knowledge-curator-design` branch).\n\n## Open follow-ups (separate issues, later)\n- Tool domain (6th domain + tool agent).\n- Trajectory / Benchmark / Memory agents.\n- Extract the domain-agent framework (after curator lands).\n- Proactive push channel (near-term = pending-question queue surfaced next interaction).\n\n🤖 Filed from a design session.",
       "labels": [],
       "user": {
-        "login": "unknown",
-        "avatar_url": ""
+        "login": "coo-2022",
+        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
       }
     }
   ],
-  "pulls": [],
+  "pulls": [
+    {
+      "number": 71,
+      "title": "feat(memory): AGFS memory plane + unified evolution lifecycle (default-frozen, opt-in)",
+      "html_url": "https://github.com/coo-2022/OpenEarth/pull/71",
+      "body": "## What\r\nVendors the AGFS memory runtime closure (39-file clean subset + adapter) into\r\n`third_party/agfs_memory/`, wires it as a pluggable memory plane, and adds a\r\nunified evolution lifecycle skeleton (`openearth/services/evolution/`: registry +\r\nmutex + harm-UCB gate + composite-version ledger, modes frozen/shadow/gated).\r\n\r\n## Safety — default behavior is bit-identical\r\n- `run.memory_backend` defaults to `none` → memory plane unchanged.\r\n- `evolution.mode` defaults to `frozen` → the evolution loop runs zero lines.\r\n- Self-contained: no AGFS checkout / pip needed (vendored copy prepended to sys.path).\r\n- `crud=shadow` records would-delete only (dry_run), never deletes.\r\nEvery existing test + `openearth run`/`experience-server` behaves identically\r\nunless config is changed. See `docs/agfs-unified-evolution-handoff.md`.\r\n\r\n## Merge shape\r\n23 commits ahead of main, no conflicts (main is an ancestor). 82 files, mostly\r\nadditive. Suggest squash-merge if the team prefers a compact history.\r\n\r\n## Not included (deliberate, follow-up)\r\nLive candidate proposer + gate wired to RolloutResult (the G2 step) — the skeleton\r\nis observable in `shadow` mode but does not self-evolve production policy yet.",
+      "state": "open",
+      "user": {
+        "login": "Windere",
+        "avatar_url": "https://avatars.githubusercontent.com/u/97029022?v=4"
+      }
+    }
+  ],
   "comments": {}
 }
