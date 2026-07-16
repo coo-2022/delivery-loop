@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-07-16T10:54:59.091870+00:00",
+  "updated_at": "2026-07-16T12:17:51.725638+00:00",
   "repo": {
     "owner": "coo-2022",
     "name": "OpenEarth"
@@ -84,6 +84,17 @@
     }
   ],
   "pulls": [
+    {
+      "number": 79,
+      "title": "fix: disable system proxy in pydantic-ai httpx client and fix re.sub …",
+      "html_url": "https://github.com/coo-2022/OpenEarth/pull/79",
+      "body": "…Windows path crash\r\n\r\n1. pydantic_ai_backend: AsyncOpenAI uses httpx which defaults to trust_env=True, picking up system proxy (HIS Proxy on Huawei intranet). Internal API calls to 10.x.x.x get intercepted and return 504. Fix: pass httpx.AsyncClient(trust_env=False).\r\n\r\n2. light_backend: re.sub replacement string contains sys.executable path (C:\\\\Users\\\\...), which has \\\\U interpreted as an invalid regex escape. Fix: use lambda instead of string replacement to bypass regex template parsing.",
+      "state": "open",
+      "user": {
+        "login": "coo-2022",
+        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
+      }
+    },
     {
       "number": 71,
       "title": "feat(memory): AGFS memory plane + unified evolution lifecycle (default-frozen, opt-in)",
