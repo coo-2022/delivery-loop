@@ -4,177 +4,125 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Delivery Loop Local</title>
-    <style>
-      :root {
-        --bg: #f5f7fa;
-        --panel: #fff;
-        --line: #d9dee7;
-        --text: #17202c;
-        --muted: #667085;
-        --accent: #1769aa;
-        --green: #198754;
-        --amber: #a15c00;
-        --red: #b42318;
-      }
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        background: var(--bg);
-        color: var(--text);
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      }
-      header {
-        height: 64px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 20px;
-        background: var(--panel);
-        border-bottom: 1px solid var(--line);
-      }
-      h1 { font-size: 18px; margin: 0; }
-      .sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
-      .layout {
-        display: grid;
-        grid-template-columns: 1fr 340px;
-        gap: 14px;
-        padding: 14px;
-      }
-      .panel {
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 14px;
-      }
-      .topline {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(120px, 1fr));
-        gap: 10px;
-        margin-bottom: 14px;
-      }
-      .metric {
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 12px;
-      }
-      .metric strong { display: block; font-size: 24px; }
-      .metric span { color: var(--muted); font-size: 12px; }
-      .board {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(180px, 1fr));
-        gap: 10px;
-      }
-      .col-title {
-        display: flex;
-        justify-content: space-between;
-        color: var(--muted);
-        font-size: 12px;
-        font-weight: 700;
-        text-transform: uppercase;
-        margin: 0 0 8px;
-      }
-      .cards { display: grid; gap: 8px; }
-      .card {
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: #fff;
-        padding: 10px;
-        cursor: pointer;
-        text-align: left;
-      }
-      .card.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(23, 105, 170, 0.14); }
-      .card-title { font-weight: 750; line-height: 1.35; overflow-wrap: anywhere; }
-      .meta, .labels, .event-meta { color: var(--muted); font-size: 12px; margin-top: 6px; }
-      .labels { display: flex; gap: 5px; flex-wrap: wrap; }
-      .label { border: 1px solid var(--line); border-radius: 999px; padding: 2px 7px; background: #f2f4f7; color: #344054; }
-      .detail h2 { font-size: 17px; margin: 0 0 8px; }
-      .body, .design, .events { white-space: pre-wrap; font-size: 13px; line-height: 1.45; overflow-wrap: anywhere; }
-      .section-title { color: var(--muted); font-size: 12px; font-weight: 800; text-transform: uppercase; margin: 16px 0 8px; }
-      button {
-        min-height: 34px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: white;
-        padding: 0 10px;
-        cursor: pointer;
-      }
-      button.primary { background: var(--accent); border-color: var(--accent); color: white; }
-      .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-      .status { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
-      .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
-      .agent-row, .event-row { border-top: 1px solid var(--line); padding: 8px 0; }
-      .agent-name { font-weight: 700; }
-      @media (max-width: 980px) {
-        .layout { grid-template-columns: 1fr; }
-        .board, .topline { grid-template-columns: 1fr; }
-      }
-    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              ink: "#17202c",
+            },
+          },
+        },
+      };
+    </script>
   </head>
-  <body>
-    <header>
-      <div>
-        <h1>Delivery Loop Local</h1>
-        <div class="sub">Backend coordinator, local worker, and dashboard running on this machine</div>
-      </div>
-      <div class="status">
-        <button onclick="syncAllRepos()">Sync GitHub</button>
-        <span class="dot"></span><span id="connection">Connected</span>
-      </div>
-    </header>
-    <div class="layout">
-      <main>
-        <div class="topline">
-          <div class="metric"><strong id="mTasks">0</strong><span>Tasks</span></div>
-          <div class="metric"><strong id="mRunning">0</strong><span>Running</span></div>
-          <div class="metric"><strong id="mTokens">0</strong><span>Tokens</span></div>
-          <div class="metric"><strong id="mCost">$0.00</strong><span>Cost</span></div>
+  <body class="min-h-screen bg-slate-100 text-ink antialiased">
+    <div class="flex min-h-screen flex-col">
+      <header class="border-b border-slate-200 bg-white">
+        <div class="flex min-h-16 flex-col gap-3 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+          <div class="flex items-center gap-3">
+            <div class="grid h-10 w-10 place-items-center rounded-lg bg-slate-900 text-sm font-black text-white">DL</div>
+            <div>
+              <h1 class="text-lg font-bold leading-tight">Delivery Loop Local</h1>
+              <p class="mt-0.5 text-sm text-slate-500">Local backend, agent worker, task progress, approvals, and usage</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <button
+              onclick="syncAllRepos()"
+              class="inline-flex h-9 items-center rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+            >
+              Sync GitHub
+            </button>
+            <div class="inline-flex h-9 items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 text-sm font-medium text-emerald-800">
+              <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+              <span id="connection">Connected</span>
+            </div>
+          </div>
         </div>
-        <div class="board" id="board"></div>
-      </main>
-      <aside class="panel detail" id="detail">
-        <div class="meta">Select a task to inspect progress, approvals, events, and agent usage.</div>
-      </aside>
+      </header>
+
+      <div class="grid flex-1 grid-cols-1 gap-4 p-4 xl:grid-cols-[minmax(0,1fr)_420px]">
+        <main class="min-w-0">
+          <section class="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+              <div class="text-xs font-bold uppercase tracking-wide text-slate-500">Tasks</div>
+              <div class="mt-2 text-3xl font-black tabular-nums" id="mTasks">0</div>
+            </div>
+            <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+              <div class="text-xs font-bold uppercase tracking-wide text-slate-500">Running</div>
+              <div class="mt-2 text-3xl font-black tabular-nums text-blue-700" id="mRunning">0</div>
+            </div>
+            <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+              <div class="text-xs font-bold uppercase tracking-wide text-slate-500">Tokens</div>
+              <div class="mt-2 text-3xl font-black tabular-nums" id="mTokens">0</div>
+            </div>
+            <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+              <div class="text-xs font-bold uppercase tracking-wide text-slate-500">Cost</div>
+              <div class="mt-2 text-3xl font-black tabular-nums text-emerald-700" id="mCost">$0.00</div>
+            </div>
+          </section>
+
+          <section id="board" class="grid grid-cols-1 gap-3 lg:grid-cols-2 2xl:grid-cols-4"></section>
+        </main>
+
+        <aside id="detail" class="min-w-0 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5 text-sm leading-6 text-slate-500">
+            Select a task to inspect its request, design proposal, approval gate, agent state, usage, and event stream.
+          </div>
+        </aside>
+      </div>
     </div>
+
     <script>
       const columns = [
-        { id: "intake", title: "Intake", stages: ["intake"] },
-        { id: "design", title: "Design", stages: ["design"] },
-        { id: "implementation", title: "Implementation", stages: ["implementation"] },
-        { id: "review", title: "Review / Done", stages: ["pr", "done"] },
+        { id: "intake", title: "Intake", stages: ["intake"], accent: "border-slate-300" },
+        { id: "design", title: "Design", stages: ["design"], accent: "border-blue-300" },
+        { id: "implementation", title: "Implementation", stages: ["implementation"], accent: "border-amber-300" },
+        { id: "review", title: "Review / Done", stages: ["pr", "done"], accent: "border-emerald-300" },
       ];
       const state = { tasks: [], agents: [], selectedId: null, selectedEvents: [] };
       const $ = selector => document.querySelector(selector);
+
       async function api(path, options) {
         const res = await fetch(path, { headers: { "Content-Type": "application/json" }, ...options });
         if (!res.ok) throw new Error(await res.text());
         return res.json();
       }
+
       function stageOf(task) {
         if (task.pr_url || task.status === "completed") return "pr";
         return task.stage || "intake";
       }
+
       async function refresh() {
         const [tasks, agents] = await Promise.all([api("/api/tasks"), api("/api/agents")]);
         state.tasks = tasks;
         state.agents = agents;
+        if (!state.selectedId && tasks[0]) state.selectedId = tasks[0].id;
         render();
       }
+
       async function selectTask(id) {
         state.selectedId = id;
         const detail = await api(`/api/tasks/${id}`);
         state.selectedEvents = detail.events;
         render();
       }
+
       async function queueDesign(id) {
         await api(`/api/tasks/${id}/runs`, { method: "POST", body: JSON.stringify({ stage: "design" }) });
         await refresh();
+        await selectTask(id);
       }
+
       async function resetTask(id) {
         await api(`/api/tasks/${id}/reset`, { method: "POST" });
         await refresh();
         await selectTask(id);
       }
+
       async function approveDesign(id) {
         try {
           await api(`/api/tasks/${id}/approve-design`, { method: "POST" });
@@ -186,6 +134,7 @@
         await refresh();
         await selectTask(id);
       }
+
       async function syncAllRepos() {
         $("#connection").textContent = "Syncing GitHub";
         const repos = await api("/api/repos");
@@ -195,6 +144,7 @@
         $("#connection").textContent = "Connected";
         await refresh();
       }
+
       function render() {
         const totalTokens = state.tasks.reduce((sum, task) => sum + task.token_input + task.token_output, 0);
         const totalCost = state.tasks.reduce((sum, task) => sum + task.cost_usd, 0);
@@ -202,55 +152,140 @@
         $("#mRunning").textContent = state.tasks.filter(task => task.status === "running").length;
         $("#mTokens").textContent = totalTokens.toLocaleString();
         $("#mCost").textContent = `$${totalCost.toFixed(2)}`;
-        $("#board").innerHTML = columns.map(col => {
-          const tasks = state.tasks.filter(task => col.stages.includes(stageOf(task)));
-          return `<section class="panel">
-            <div class="col-title"><span>${col.title}</span><span>${tasks.length}</span></div>
-            <div class="cards">${tasks.map(card).join("") || `<div class="meta">No tasks</div>`}</div>
-          </section>`;
-        }).join("");
+        $("#board").innerHTML = columns.map(column).join("");
         renderDetail();
       }
+
+      function column(col) {
+        const tasks = state.tasks.filter(task => col.stages.includes(stageOf(task)));
+        return `<section class="min-h-80 rounded-lg border ${col.accent} bg-white p-3 shadow-sm">
+          <div class="mb-3 flex items-center justify-between">
+            <div class="text-xs font-black uppercase tracking-wide text-slate-600">${col.title}</div>
+            <div class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-600">${tasks.length}</div>
+          </div>
+          <div class="grid gap-2">${tasks.map(card).join("") || emptyColumn()}</div>
+        </section>`;
+      }
+
+      function emptyColumn() {
+        return `<div class="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500">No tasks</div>`;
+      }
+
       function card(task) {
-        const active = task.id === state.selectedId ? "active" : "";
-        return `<button class="card ${active}" onclick="selectTask(${task.id})">
-          <div class="card-title">#${task.github_issue_number} ${escapeHtml(task.title)}</div>
-          <div class="meta">${escapeHtml(task.repo)} · ${escapeHtml(task.status)} · ${escapeHtml(task.stage)}</div>
-          <div class="labels">${task.labels.map(label => `<span class="label">${escapeHtml(label)}</span>`).join("")}</div>
+        const active = task.id === state.selectedId ? "border-blue-500 ring-2 ring-blue-100" : "border-slate-200 hover:border-slate-300";
+        return `<button class="w-full rounded-lg border ${active} bg-white p-3 text-left shadow-sm transition" onclick="selectTask(${task.id})">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <div class="break-words text-sm font-bold leading-5 text-slate-900">#${task.github_issue_number} ${escapeHtml(task.title)}</div>
+              <div class="mt-1 text-xs text-slate-500">${escapeHtml(task.repo)}</div>
+            </div>
+            ${statusPill(task.status)}
+          </div>
+          <div class="mt-3 flex flex-wrap gap-1.5">${task.labels.map(labelPill).join("")}</div>
+          <div class="mt-3 flex items-center justify-between text-xs text-slate-500">
+            <span>${escapeHtml(task.stage)}</span>
+            <span>${(task.token_input + task.token_output).toLocaleString()} tok</span>
+          </div>
         </button>`;
       }
+
+      function statusPill(status) {
+        const colors = {
+          new: "bg-slate-100 text-slate-700",
+          queued: "bg-blue-50 text-blue-700",
+          running: "bg-amber-50 text-amber-700",
+          awaiting_approval: "bg-purple-50 text-purple-700",
+          pr_review: "bg-emerald-50 text-emerald-700",
+          failed: "bg-red-50 text-red-700",
+        };
+        return `<span class="shrink-0 rounded-full px-2 py-1 text-[11px] font-bold ${colors[status] || "bg-slate-100 text-slate-700"}">${escapeHtml(status)}</span>`;
+      }
+
+      function labelPill(label) {
+        return `<span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-semibold text-slate-600">${escapeHtml(label)}</span>`;
+      }
+
       function renderDetail() {
         const task = state.tasks.find(item => item.id === state.selectedId);
         if (!task) return;
-        $("#detail").innerHTML = `<h2>#${task.github_issue_number} ${escapeHtml(task.title)}</h2>
-          <div class="meta">${escapeHtml(task.repo)} · ${escapeHtml(task.status)} · ${escapeHtml(task.stage)}</div>
-          <div class="actions">
-            <button onclick="queueDesign(${task.id})" ${task.status === "new" || task.stage === "intake" ? "" : "disabled"}>Queue Design</button>
-            <button onclick="resetTask(${task.id})">Reset Demo</button>
-            ${task.pr_url ? `<a href="${escapeHtml(task.pr_url)}" target="_blank"><button>Open PR</button></a>` : ""}
+        $("#detail").innerHTML = `<div class="flex items-start justify-between gap-4">
+            <div class="min-w-0">
+              <h2 class="break-words text-lg font-black leading-6 text-slate-950">#${task.github_issue_number} ${escapeHtml(task.title)}</h2>
+              <div class="mt-2 text-sm text-slate-500">${escapeHtml(task.repo)} · ${escapeHtml(task.stage)}</div>
+            </div>
+            ${statusPill(task.status)}
           </div>
-          <div class="section-title">Request</div><div class="body">${escapeHtml(task.body || "No body")}</div>
-          ${task.status === "awaiting_approval" ? `
-            <div class="section-title">Design Review Required</div>
-            <div class="design">${escapeHtml(task.design || "No design proposal yet")}</div>
-            <div class="actions"><button class="primary" onclick="approveDesign(${task.id})">Approve Design And Start Implementation</button></div>
-          ` : `
-            <div class="section-title">Design</div><div class="design">${escapeHtml(task.design || "No design proposal yet")}</div>
-          `}
-          <div class="section-title">Agent Usage</div>
-          <div class="meta">${task.token_input} input tokens · ${task.token_output} output tokens · $${task.cost_usd.toFixed(2)}</div>
-          <div class="section-title">Agents</div>
-          ${state.agents.map(agent => `<div class="agent-row"><div class="agent-name">${escapeHtml(agent.name)}</div><div class="meta">${escapeHtml(agent.status)} · $${agent.cost_usd.toFixed(2)}</div></div>`).join("") || `<div class="meta">No agents yet</div>`}
-          <div class="section-title">Events</div>
-          <div class="events">${state.selectedEvents.map(event => `<div class="event-row"><div>${escapeHtml(event.message)}</div><div class="event-meta">${escapeHtml(event.type)} · ${escapeHtml(event.created_at)}</div></div>`).join("")}</div>`;
+
+          <div class="mt-4 flex flex-wrap gap-2">
+            <button class="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40" onclick="queueDesign(${task.id})" ${task.status === "new" || task.stage === "intake" ? "" : "disabled"}>Queue Design</button>
+            <button class="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50" onclick="resetTask(${task.id})">Reset Demo</button>
+            ${task.pr_url ? `<a href="${escapeHtml(task.pr_url)}" target="_blank"><button class="h-9 rounded-lg border border-emerald-300 bg-emerald-50 px-3 text-sm font-semibold text-emerald-800 shadow-sm hover:bg-emerald-100">Open PR</button></a>` : ""}
+          </div>
+
+          ${task.status === "awaiting_approval" ? reviewGate(task) : ""}
+          ${infoBlock("Request", task.body || "No body")}
+          ${task.status !== "awaiting_approval" ? infoBlock("Design", task.design || "No design proposal yet") : ""}
+          ${usageBlock(task)}
+          ${agentBlock()}
+          ${eventsBlock()}`;
       }
+
+      function reviewGate(task) {
+        return `<section class="mt-5 rounded-lg border border-purple-200 bg-purple-50 p-4">
+          <div class="text-xs font-black uppercase tracking-wide text-purple-800">Design Review Required</div>
+          <div class="mt-3 whitespace-pre-wrap break-words rounded-lg border border-purple-200 bg-white p-3 text-sm leading-6 text-slate-800">${escapeHtml(task.design || "No design proposal yet")}</div>
+          <button class="mt-3 h-10 rounded-lg bg-purple-700 px-4 text-sm font-bold text-white shadow-sm hover:bg-purple-800" onclick="approveDesign(${task.id})">Approve Design And Start Implementation</button>
+        </section>`;
+      }
+
+      function infoBlock(title, content) {
+        return `<section class="mt-5">
+          <div class="text-xs font-black uppercase tracking-wide text-slate-500">${title}</div>
+          <div class="mt-2 max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-700">${escapeHtml(content)}</div>
+        </section>`;
+      }
+
+      function usageBlock(task) {
+        return `<section class="mt-5 grid grid-cols-3 gap-2">
+          <div class="rounded-lg border border-slate-200 bg-white p-3"><div class="text-[11px] font-bold uppercase text-slate-500">Input</div><div class="mt-1 font-black">${task.token_input.toLocaleString()}</div></div>
+          <div class="rounded-lg border border-slate-200 bg-white p-3"><div class="text-[11px] font-bold uppercase text-slate-500">Output</div><div class="mt-1 font-black">${task.token_output.toLocaleString()}</div></div>
+          <div class="rounded-lg border border-slate-200 bg-white p-3"><div class="text-[11px] font-bold uppercase text-slate-500">Cost</div><div class="mt-1 font-black text-emerald-700">$${task.cost_usd.toFixed(2)}</div></div>
+        </section>`;
+      }
+
+      function agentBlock() {
+        return `<section class="mt-5">
+          <div class="text-xs font-black uppercase tracking-wide text-slate-500">Agents</div>
+          <div class="mt-2 grid gap-2">${state.agents.map(agent => `<div class="rounded-lg border border-slate-200 bg-white p-3">
+            <div class="flex items-center justify-between gap-3">
+              <div class="font-bold">${escapeHtml(agent.name)}</div>
+              ${statusPill(agent.status)}
+            </div>
+            <div class="mt-1 text-xs text-slate-500">${agent.token_input + agent.token_output} tokens · $${agent.cost_usd.toFixed(2)}</div>
+          </div>`).join("") || `<div class="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-sm text-slate-500">No agents yet</div>`}</div>
+        </section>`;
+      }
+
+      function eventsBlock() {
+        return `<section class="mt-5">
+          <div class="text-xs font-black uppercase tracking-wide text-slate-500">Events</div>
+          <div class="mt-2 max-h-72 overflow-auto rounded-lg border border-slate-200 bg-white">
+            ${state.selectedEvents.map(event => `<div class="border-b border-slate-100 p-3 last:border-b-0">
+              <div class="text-sm font-semibold text-slate-800">${escapeHtml(event.message)}</div>
+              <div class="mt-1 text-xs text-slate-500">${escapeHtml(event.type)} · ${escapeHtml(event.created_at)}</div>
+            </div>`).join("") || `<div class="p-3 text-sm text-slate-500">No events yet</div>`}
+          </div>
+        </section>`;
+      }
+
       function escapeHtml(value) {
         return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
       }
+
       const events = new EventSource("/api/events/stream");
       events.addEventListener("delivery", () => refresh().catch(console.error));
       events.onerror = () => { $("#connection").textContent = "Reconnecting"; };
-      refresh().catch(error => { $("#connection").textContent = error.message; });
+      refresh().then(() => state.selectedId && selectTask(state.selectedId)).catch(error => { $("#connection").textContent = error.message; });
       window.selectTask = selectTask;
       window.queueDesign = queueDesign;
       window.approveDesign = approveDesign;
