@@ -1,0 +1,68 @@
+name: Delivery request
+description: Submit a delivery request for an agent-assisted change.
+title: "[Request]: "
+labels:
+  - request:new
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for bugs, features, docs, tests, and maintenance work that should enter the Delivery Loop queue.
+  - type: dropdown
+    id: request_type
+    attributes:
+      label: Request type
+      options:
+        - bug
+        - feature
+        - docs
+        - test
+        - chore
+        - benchmark
+      default: 0
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P0
+        - P1
+        - P2
+        - P3
+      default: 2
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What should change, and why?
+      placeholder: Describe the problem, missing behavior, or desired outcome.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: How should reviewers know the work is complete?
+      placeholder: |
+        - ...
+        - ...
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Add links, screenshots, logs, affected users, or related issues.
+    validations:
+      required: false
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints
+      description: Mention files, APIs, compatibility requirements, rollout concerns, or areas the agent should avoid.
+    validations:
+      required: false

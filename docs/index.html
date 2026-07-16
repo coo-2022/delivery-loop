@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Delivery Loop</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f7f9;
+        --panel: #ffffff;
+        --panel-soft: #f0f3f7;
+        --text: #1c2430;
+        --muted: #647084;
+        --line: #d9dee7;
+        --accent: #1769aa;
+        --accent-strong: #0e4d80;
+        --green: #1b7f4d;
+        --amber: #a15c00;
+        --red: #b42318;
+        --shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        letter-spacing: 0;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      button,
+      select,
+      input {
+        font: inherit;
+      }
+
+      .shell {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: 260px minmax(520px, 1fr) 380px;
+        grid-template-rows: auto 1fr;
+      }
+
+      header {
+        grid-column: 1 / -1;
+        min-height: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 14px 24px;
+        background: var(--panel);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .brand-mark {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: #1f2937;
+        color: white;
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 18px;
+        line-height: 1.2;
+      }
+
+      .subtitle {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 3px;
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .button {
+        border: 1px solid var(--line);
+        background: var(--panel);
+        color: var(--text);
+        min-height: 36px;
+        border-radius: 8px;
+        padding: 0 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        text-decoration: none;
+        box-shadow: var(--shadow);
+      }
+
+      .button.primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: white;
+      }
+
+      .icon {
+        width: 16px;
+        height: 16px;
+        flex: 0 0 auto;
+      }
+
+      .sidebar,
+      .detail {
+        background: var(--panel);
+        border-right: 1px solid var(--line);
+        min-width: 0;
+        overflow: auto;
+      }
+
+      .detail {
+        border-right: 0;
+        border-left: 1px solid var(--line);
+      }
+
+      .sidebar-inner,
+      .detail-inner {
+        padding: 18px;
+      }
+
+      .section-title {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin: 18px 0 8px;
+      }
+
+      .repo-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .repo-button {
+        width: 100%;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        border-radius: 8px;
+        min-height: 46px;
+        padding: 8px 10px;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .repo-button.active {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px rgba(23, 105, 170, 0.14);
+      }
+
+      .repo-name {
+        font-weight: 700;
+      }
+
+      .repo-meta {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 2px;
+      }
+
+      .filter {
+        display: grid;
+        gap: 8px;
+      }
+
+      .filter label {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .filter select,
+      .filter input {
+        width: 100%;
+        min-height: 36px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: white;
+        padding: 0 10px;
+      }
+
+      main {
+        min-width: 0;
+        overflow: auto;
+      }
+
+      .main-inner {
+        padding: 18px;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(120px, 1fr));
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+
+      .metric {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+        box-shadow: var(--shadow);
+      }
+
+      .metric-value {
+        font-size: 24px;
+        font-weight: 800;
+      }
+
+      .metric-label {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .board {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(220px, 1fr));
+        gap: 12px;
+        align-items: start;
+      }
+
+      .column {
+        min-height: 400px;
+      }
+
+      .column-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
+
+      .column-title {
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .count {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .cards {
+        display: grid;
+        gap: 8px;
+      }
+
+      .card {
+        width: 100%;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        border-radius: 8px;
+        padding: 10px;
+        text-align: left;
+        cursor: pointer;
+        box-shadow: var(--shadow);
+      }
+
+      .card.active {
+        border-color: var(--accent);
+      }
+
+      .card-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 12px;
+        margin-bottom: 7px;
+      }
+
+      .title {
+        font-weight: 750;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+      }
+
+      .labels {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+        margin-top: 9px;
+      }
+
+      .label {
+        border: 1px solid var(--line);
+        background: var(--panel-soft);
+        border-radius: 999px;
+        padding: 2px 7px;
+        font-size: 11px;
+        color: #374151;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+      }
+
+      .label.priority {
+        color: var(--red);
+        background: #fff0ee;
+        border-color: #ffd2cc;
+      }
+
+      .label.design {
+        color: var(--accent-strong);
+        background: #eef6ff;
+        border-color: #c9e2ff;
+      }
+
+      .label.pr {
+        color: var(--green);
+        background: #edf9f2;
+        border-color: #c9ecd8;
+      }
+
+      .avatar {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .detail-empty {
+        color: var(--muted);
+        line-height: 1.45;
+      }
+
+      .detail h2 {
+        font-size: 18px;
+        line-height: 1.35;
+        margin: 0 0 10px;
+        overflow-wrap: anywhere;
+      }
+
+      .detail-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 13px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+      }
+
+      .body,
+      .plan,
+      .pr-list {
+        border-top: 1px solid var(--line);
+        padding-top: 14px;
+        margin-top: 14px;
+      }
+
+      .markdown {
+        white-space: pre-wrap;
+        color: #2d3645;
+        line-height: 1.45;
+        font-size: 13px;
+        overflow-wrap: anywhere;
+        max-height: 320px;
+        overflow: auto;
+      }
+
+      .plan-item,
+      .pr-item {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px;
+        background: white;
+        margin-top: 8px;
+      }
+
+      .plan-title,
+      .pr-title {
+        font-weight: 750;
+        margin-bottom: 6px;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .status {
+        min-height: 28px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--green);
+      }
+
+      .dot.loading {
+        background: var(--amber);
+      }
+
+      .dot.error {
+        background: var(--red);
+      }
+
+      @media (max-width: 1180px) {
+        .shell {
+          grid-template-columns: 230px minmax(460px, 1fr);
+        }
+
+        .detail {
+          grid-column: 1 / -1;
+          border-left: 0;
+          border-top: 1px solid var(--line);
+        }
+      }
+
+      @media (max-width: 760px) {
+        .shell {
+          display: block;
+        }
+
+        header {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .toolbar {
+          width: 100%;
+          justify-content: flex-start;
+        }
+
+        .sidebar,
+        .detail {
+          border: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        .metrics,
+        .board {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header>
+        <div class="brand">
+          <div class="brand-mark">DL</div>
+          <div>
+            <h1>Delivery Loop</h1>
+            <div class="subtitle">Demand board and implementation planning across managed GitHub projects</div>
+          </div>
+        </div>
+        <div class="toolbar">
+          <div class="status" id="status"><span class="dot loading"></span><span>Loading OpenEarth issues</span></div>
+          <button class="button" id="refresh" type="button" title="Refresh issues">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M21 12a9 9 0 0 1-15.4 6.4M3 12A9 9 0 0 1 18.4 5.6M18 2v4h-4M6 22v-4h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Refresh
+          </button>
+          <a class="button primary" id="newRequest" target="_blank" rel="noreferrer">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            New request
+          </a>
+        </div>
+      </header>
+
+      <aside class="sidebar">
+        <div class="sidebar-inner">
+          <div class="section-title">Managed Projects</div>
+          <div class="repo-list" id="repoList"></div>
+
+          <div class="section-title">Filters</div>
+          <div class="filter">
+            <label for="query">Search</label>
+            <input id="query" type="search" placeholder="Title, label, author" />
+            <label for="priority">Priority</label>
+            <select id="priority">
+              <option value="">Any priority</option>
+              <option value="priority:P0">P0</option>
+              <option value="priority:P1">P1</option>
+              <option value="priority:P2">P2</option>
+              <option value="priority:P3">P3</option>
+            </select>
+            <label for="type">Type</label>
+            <select id="type">
+              <option value="">Any type</option>
+              <option value="type:bug">Bug</option>
+              <option value="type:feature">Feature</option>
+              <option value="type:docs">Docs</option>
+              <option value="type:test">Test</option>
+              <option value="type:chore">Chore</option>
+              <option value="type:benchmark">Benchmark</option>
+            </select>
+          </div>
+        </div>
+      </aside>
+
+      <main>
+        <div class="main-inner">
+          <div class="metrics">
+            <div class="metric"><div class="metric-value" id="metricOpen">0</div><div class="metric-label">Open requests</div></div>
+            <div class="metric"><div class="metric-value" id="metricReview">0</div><div class="metric-label">Design review</div></div>
+            <div class="metric"><div class="metric-value" id="metricImpl">0</div><div class="metric-label">In implementation</div></div>
+            <div class="metric"><div class="metric-value" id="metricPr">0</div><div class="metric-label">PR / review</div></div>
+          </div>
+          <div class="board" id="board"></div>
+        </div>
+      </main>
+
+      <aside class="detail">
+        <div class="detail-inner" id="detail">
+          <div class="detail-empty">Select a request to inspect its body, Delivery Loop design proposal, implementation plan, lease, and related PRs.</div>
+        </div>
+      </aside>
+    </div>
+
+    <script>
+      const MANAGED_REPOS = [
+        {
+          owner: "coo-2022",
+          name: "OpenEarth",
+          description: "First dogfood target project",
+          issueTemplate: "issues/new/choose",
+        },
+      ];
+
+      const COLUMNS = [
+        { id: "intake", title: "Intake", match: labels => labels.has("request:new") || labels.has("request:triaged") },
+        { id: "design", title: "Design", match: labels => labels.has("design:review") || labels.has("design:changes-requested") || labels.has("request:planned") },
+        { id: "implementation", title: "Implementation", match: labels => labels.has("impl:in-progress") || labels.has("agent:claimed") },
+        { id: "pr", title: "PR / Done", match: labels => labels.has("pr:open") || labels.has("pr:review") || labels.has("pr:approved") || labels.has("pr:merged") },
+      ];
+
+      const state = {
+        repo: MANAGED_REPOS[0],
+        issues: [],
+        pulls: [],
+        selected: null,
+        commentsByIssue: new Map(),
+      };
+
+      const els = {
+        repoList: document.querySelector("#repoList"),
+        board: document.querySelector("#board"),
+        detail: document.querySelector("#detail"),
+        status: document.querySelector("#status"),
+        refresh: document.querySelector("#refresh"),
+        newRequest: document.querySelector("#newRequest"),
+        query: document.querySelector("#query"),
+        priority: document.querySelector("#priority"),
+        type: document.querySelector("#type"),
+        metricOpen: document.querySelector("#metricOpen"),
+        metricReview: document.querySelector("#metricReview"),
+        metricImpl: document.querySelector("#metricImpl"),
+        metricPr: document.querySelector("#metricPr"),
+      };
+
+      function api(path) {
+        return `https://api.github.com${path}`;
+      }
+
+      async function fetchJson(url) {
+        const response = await fetch(url, { headers: { Accept: "application/vnd.github+json" } });
+        if (!response.ok) {
+          throw new Error(`${response.status} ${response.statusText}`);
+        }
+        return response.json();
+      }
+
+      function repoSlug(repo = state.repo) {
+        return `${repo.owner}/${repo.name}`;
+      }
+
+      function setStatus(kind, text) {
+        const cls = kind === "error" ? "error" : kind === "loading" ? "loading" : "";
+        els.status.innerHTML = `<span class="dot ${cls}"></span><span>${escapeHtml(text)}</span>`;
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function labelsOf(issue) {
+        return new Set((issue.labels || []).map(label => label.name));
+      }
+
+      function issueColumn(issue) {
+        const labels = labelsOf(issue);
+        return COLUMNS.find(column => column.match(labels)) || COLUMNS[0];
+      }
+
+      function labelClass(name) {
+        if (name.startsWith("priority:")) return "priority";
+        if (name.startsWith("design:")) return "design";
+        if (name.startsWith("pr:")) return "pr";
+        return "";
+      }
+
+      function visibleIssues() {
+        const q = els.query.value.trim().toLowerCase();
+        const priority = els.priority.value;
+        const type = els.type.value;
+        return state.issues.filter(issue => {
+          const labels = labelsOf(issue);
+          if (priority && !labels.has(priority)) return false;
+          if (type && !labels.has(type)) return false;
+          if (!q) return true;
+          const haystack = [
+            issue.title,
+            issue.user?.login,
+            issue.number,
+            ...(issue.labels || []).map(label => label.name),
+          ].join(" ").toLowerCase();
+          return haystack.includes(q);
+        });
+      }
+
+      function renderRepos() {
+        els.repoList.innerHTML = MANAGED_REPOS.map(repo => {
+          const active = repoSlug(repo) === repoSlug() ? "active" : "";
+          return `
+            <button class="repo-button ${active}" type="button" data-repo="${escapeHtml(repoSlug(repo))}">
+              <div class="repo-name">${escapeHtml(repoSlug(repo))}</div>
+              <div class="repo-meta">${escapeHtml(repo.description)}</div>
+            </button>
+          `;
+        }).join("");
+      }
+
+      function renderMetrics(issues) {
+        els.metricOpen.textContent = issues.length;
+        els.metricReview.textContent = issues.filter(issue => labelsOf(issue).has("design:review")).length;
+        els.metricImpl.textContent = issues.filter(issue => labelsOf(issue).has("impl:in-progress") || labelsOf(issue).has("agent:claimed")).length;
+        els.metricPr.textContent = issues.filter(issue => [...labelsOf(issue)].some(label => label.startsWith("pr:"))).length;
+      }
+
+      function renderBoard() {
+        const issues = visibleIssues();
+        renderMetrics(issues);
+        els.board.innerHTML = COLUMNS.map(column => {
+          const cards = issues.filter(issue => issueColumn(issue).id === column.id);
+          return `
+            <section class="column">
+              <div class="column-header">
+                <div class="column-title">${escapeHtml(column.title)}</div>
+                <div class="count">${cards.length}</div>
+              </div>
+              <div class="cards">
+                ${cards.map(renderCard).join("") || `<div class="muted">No requests</div>`}
+              </div>
+            </section>
+          `;
+        }).join("");
+      }
+
+      function renderCard(issue) {
+        const active = state.selected?.number === issue.number ? "active" : "";
+        const labels = (issue.labels || []).slice(0, 5);
+        return `
+          <button class="card ${active}" type="button" data-issue="${issue.number}">
+            <div class="card-top">
+              <span>#${issue.number}</span>
+              ${issue.user?.avatar_url ? `<img class="avatar" src="${escapeHtml(issue.user.avatar_url)}" alt="${escapeHtml(issue.user.login)}" />` : ""}
+            </div>
+            <div class="title">${escapeHtml(issue.title)}</div>
+            <div class="labels">
+              ${labels.map(label => `<span class="label ${labelClass(label.name)}">${escapeHtml(label.name)}</span>`).join("")}
+            </div>
+          </button>
+        `;
+      }
+
+      function relatedPulls(issue) {
+        const number = `#${issue.number}`;
+        return state.pulls.filter(pr => {
+          const body = pr.body || "";
+          return pr.title.includes(number) || body.includes(number) || body.includes(`/${issue.number}`);
+        });
+      }
+
+      function extractPlans(comments) {
+        return comments.filter(comment => {
+          const body = comment.body || "";
+          return body.includes("Delivery Loop design proposal") || body.includes("Implementation plan") || body.includes("delivery.lease.v1");
+        });
+      }
+
+      async function selectIssue(number) {
+        state.selected = state.issues.find(issue => issue.number === Number(number));
+        renderBoard();
+        renderDetail();
+        if (!state.selected || state.commentsByIssue.has(state.selected.number)) return;
+        try {
+          const comments = await fetchJson(api(`/repos/${repoSlug()}/issues/${state.selected.number}/comments?per_page=100`));
+          state.commentsByIssue.set(state.selected.number, comments);
+          renderDetail();
+        } catch (error) {
+          state.commentsByIssue.set(state.selected.number, [{ body: `Unable to load comments: ${error.message}` }]);
+          renderDetail();
+        }
+      }
+
+      function renderDetail() {
+        const issue = state.selected;
+        if (!issue) {
+          els.detail.innerHTML = `<div class="detail-empty">Select a request to inspect its body, Delivery Loop design proposal, implementation plan, lease, and related PRs.</div>`;
+          return;
+        }
+        const comments = state.commentsByIssue.get(issue.number);
+        const plans = comments ? extractPlans(comments) : [];
+        const prs = relatedPulls(issue);
+        els.detail.innerHTML = `
+          <h2>${escapeHtml(issue.title)}</h2>
+          <div class="detail-meta">
+            ${issue.user?.avatar_url ? `<img class="avatar" src="${escapeHtml(issue.user.avatar_url)}" alt="${escapeHtml(issue.user.login)}" />` : ""}
+            <span>#${issue.number}</span>
+            <span>${escapeHtml(issue.user?.login || "unknown")}</span>
+            <a href="${escapeHtml(issue.html_url)}" target="_blank" rel="noreferrer">Open in GitHub</a>
+          </div>
+          <div class="labels">
+            ${(issue.labels || []).map(label => `<span class="label ${labelClass(label.name)}">${escapeHtml(label.name)}</span>`).join("")}
+          </div>
+          <div class="body">
+            <div class="section-title">Request</div>
+            <div class="markdown">${escapeHtml(issue.body || "No request body.")}</div>
+          </div>
+          <div class="plan">
+            <div class="section-title">Design / Implementation Plan</div>
+            ${
+              comments
+                ? plans.map(comment => `
+                    <div class="plan-item">
+                      <div class="plan-title">${escapeHtml(comment.user?.login || "Delivery Loop")}</div>
+                      <div class="markdown">${escapeHtml(comment.body)}</div>
+                    </div>
+                  `).join("") || `<div class="muted">No Delivery Loop plan comment found yet.</div>`
+                : `<div class="muted">Loading plan comments...</div>`
+            }
+          </div>
+          <div class="pr-list">
+            <div class="section-title">Related PRs</div>
+            ${
+              prs.map(pr => `
+                <div class="pr-item">
+                  <div class="pr-title"><a href="${escapeHtml(pr.html_url)}" target="_blank" rel="noreferrer">#${pr.number} ${escapeHtml(pr.title)}</a></div>
+                  <div class="muted">${escapeHtml(pr.state)} · ${escapeHtml(pr.user?.login || "unknown")}</div>
+                </div>
+              `).join("") || `<div class="muted">No related PR detected.</div>`
+            }
+          </div>
+        `;
+      }
+
+      async function loadRepo() {
+        setStatus("loading", `Loading ${repoSlug()} issues`);
+        els.newRequest.href = `https://github.com/${repoSlug()}/${state.repo.issueTemplate}`;
+        try {
+          const [issues, pulls] = await Promise.all([
+            fetchJson(api(`/repos/${repoSlug()}/issues?state=open&per_page=100`)),
+            fetchJson(api(`/repos/${repoSlug()}/pulls?state=open&per_page=100`)),
+          ]);
+          state.issues = issues.filter(issue => !issue.pull_request);
+          state.pulls = pulls;
+          state.selected = state.issues[0] || null;
+          state.commentsByIssue.clear();
+          renderRepos();
+          renderBoard();
+          renderDetail();
+          if (state.selected) selectIssue(state.selected.number);
+          setStatus("ready", `Loaded ${state.issues.length} open requests from ${repoSlug()}`);
+        } catch (error) {
+          state.issues = [];
+          state.pulls = [];
+          renderBoard();
+          setStatus("error", `GitHub API error: ${error.message}`);
+        }
+      }
+
+      els.repoList.addEventListener("click", event => {
+        const button = event.target.closest("[data-repo]");
+        if (!button) return;
+        const repo = MANAGED_REPOS.find(candidate => repoSlug(candidate) === button.dataset.repo);
+        if (!repo) return;
+        state.repo = repo;
+        loadRepo();
+      });
+
+      els.board.addEventListener("click", event => {
+        const card = event.target.closest("[data-issue]");
+        if (card) selectIssue(card.dataset.issue);
+      });
+
+      els.refresh.addEventListener("click", loadRepo);
+      els.query.addEventListener("input", renderBoard);
+      els.priority.addEventListener("change", renderBoard);
+      els.type.addEventListener("change", renderBoard);
+
+      renderRepos();
+      loadRepo();
+    </script>
+  </body>
+</html>

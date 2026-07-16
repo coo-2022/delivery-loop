@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "delivery-loop"
+version = "0.1.0"
+description = "GitHub-driven agent delivery orchestrator"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "Delivery Loop contributors" }]
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[project.scripts]
+delivery-loop = "delivery_loop.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
