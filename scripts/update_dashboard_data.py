@@ -11,6 +11,7 @@ from typing import Any
 
 REPOS = [
     ("coo-2022", "OpenEarth"),
+    ("coo-2022", "delivery-loop-hello-world"),
 ]
 
 

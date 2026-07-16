@@ -64,8 +64,7 @@ def cmd_tick(args: argparse.Namespace) -> int:
 
     issues = []
     for repo in config.repos:
-        issues.extend(client.list_issues(repo, labels=["request:new"]))
-        issues.extend(client.list_issues(repo, labels=["request:planned"]))
+        issues.extend(client.list_issues(repo))
 
     issue = scheduler.next_issue(issues)
     if issue is None:
