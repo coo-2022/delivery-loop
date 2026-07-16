@@ -35,8 +35,44 @@ This repository now contains the first Python implementation skeleton:
 - Deterministic issue scheduler.
 - Agent lease model.
 - Execution policy for file, command, git push, and PR merge permissions.
+- Local backend, dashboard, SQLite state, SSE events, and worker skeleton for development.
 
 The initial policy allows an agent to push feature branches such as `delivery/*` and `agent/*`, but denies direct pushes to `main`, `master`, release branches, force pushes, tag pushes, and PR merge.
+
+## Local development architecture
+
+The product flow is split into four local roles:
+
+- GitHub repository: issue submission, design discussion, PR review, CI checks.
+- Backend coordinator: scheduler, state machine, approvals, agent dispatch, event log, token/cost tracking.
+- Agent runtime: local worker process that executes design and implementation runs.
+- Frontend dashboard: local browser UI for task progress, agent status, events, and usage.
+
+Start from a clean local state:
+
+```bash
+python -m delivery_loop.cli dev seed
+```
+
+Run the backend:
+
+```bash
+python -m uvicorn delivery_loop.server:app --reload --port 8000
+```
+
+Run the local worker in another terminal:
+
+```bash
+python -m delivery_loop.worker
+```
+
+Open:
+
+```text
+http://127.0.0.1:8000
+```
+
+The seeded demo queues a design run for `coo-2022/delivery-loop-hello-world#1`. The worker generates a design proposal and moves the task to `awaiting_approval`. Click `Approve Design` in the dashboard to queue the implementation stage.
 
 ## Usage
 

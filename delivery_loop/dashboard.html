@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Delivery Loop Local</title>
+    <style>
+      :root {
+        --bg: #f5f7fa;
+        --panel: #fff;
+        --line: #d9dee7;
+        --text: #17202c;
+        --muted: #667085;
+        --accent: #1769aa;
+        --green: #198754;
+        --amber: #a15c00;
+        --red: #b42318;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      header {
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        background: var(--panel);
+        border-bottom: 1px solid var(--line);
+      }
+      h1 { font-size: 18px; margin: 0; }
+      .sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
+      .layout {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 14px;
+        padding: 14px;
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 14px;
+      }
+      .topline {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(120px, 1fr));
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+      .metric {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+      }
+      .metric strong { display: block; font-size: 24px; }
+      .metric span { color: var(--muted); font-size: 12px; }
+      .board {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(180px, 1fr));
+        gap: 10px;
+      }
+      .col-title {
+        display: flex;
+        justify-content: space-between;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin: 0 0 8px;
+      }
+      .cards { display: grid; gap: 8px; }
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 10px;
+        cursor: pointer;
+        text-align: left;
+      }
+      .card.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(23, 105, 170, 0.14); }
+      .card-title { font-weight: 750; line-height: 1.35; overflow-wrap: anywhere; }
+      .meta, .labels, .event-meta { color: var(--muted); font-size: 12px; margin-top: 6px; }
+      .labels { display: flex; gap: 5px; flex-wrap: wrap; }
+      .label { border: 1px solid var(--line); border-radius: 999px; padding: 2px 7px; background: #f2f4f7; color: #344054; }
+      .detail h2 { font-size: 17px; margin: 0 0 8px; }
+      .body, .design, .events { white-space: pre-wrap; font-size: 13px; line-height: 1.45; overflow-wrap: anywhere; }
+      .section-title { color: var(--muted); font-size: 12px; font-weight: 800; text-transform: uppercase; margin: 16px 0 8px; }
+      button {
+        min-height: 34px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: white;
+        padding: 0 10px;
+        cursor: pointer;
+      }
+      button.primary { background: var(--accent); border-color: var(--accent); color: white; }
+      .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+      .status { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+      .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+      .agent-row, .event-row { border-top: 1px solid var(--line); padding: 8px 0; }
+      .agent-name { font-weight: 700; }
+      @media (max-width: 980px) {
+        .layout { grid-template-columns: 1fr; }
+        .board, .topline { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>Delivery Loop Local</h1>
+        <div class="sub">Backend coordinator, local worker, and dashboard running on this machine</div>
+      </div>
+      <div class="status"><span class="dot"></span><span id="connection">Connected</span></div>
+    </header>
+    <div class="layout">
+      <main>
+        <div class="topline">
+          <div class="metric"><strong id="mTasks">0</strong><span>Tasks</span></div>
+          <div class="metric"><strong id="mRunning">0</strong><span>Running</span></div>
+          <div class="metric"><strong id="mTokens">0</strong><span>Tokens</span></div>
+          <div class="metric"><strong id="mCost">$0.00</strong><span>Cost</span></div>
+        </div>
+        <div class="board" id="board"></div>
+      </main>
+      <aside class="panel detail" id="detail">
+        <div class="meta">Select a task to inspect progress, approvals, events, and agent usage.</div>
+      </aside>
+    </div>
+    <script>
+      const columns = [
+        { id: "intake", title: "Intake", stages: ["intake"] },
+        { id: "design", title: "Design", stages: ["design"] },
+        { id: "implementation", title: "Implementation", stages: ["implementation"] },
+        { id: "review", title: "Review / Done", stages: ["pr", "done"] },
+      ];
+      const state = { tasks: [], agents: [], selectedId: null, selectedEvents: [] };
+      const $ = selector => document.querySelector(selector);
+      async function api(path, options) {
+        const res = await fetch(path, { headers: { "Content-Type": "application/json" }, ...options });
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+      }
+      function stageOf(task) {
+        if (task.pr_url || task.status === "completed") return "pr";
+        return task.stage || "intake";
+      }
+      async function refresh() {
+        const [tasks, agents] = await Promise.all([api("/api/tasks"), api("/api/agents")]);
+        state.tasks = tasks;
+        state.agents = agents;
+        render();
+      }
+      async function selectTask(id) {
+        state.selectedId = id;
+        const detail = await api(`/api/tasks/${id}`);
+        state.selectedEvents = detail.events;
+        render();
+      }
+      async function queueDesign(id) {
+        await api(`/api/tasks/${id}/runs`, { method: "POST", body: JSON.stringify({ stage: "design" }) });
+        await refresh();
+      }
+      async function approveDesign(id) {
+        await api(`/api/tasks/${id}/approve-design`, { method: "POST" });
+        await refresh();
+        await selectTask(id);
+      }
+      function render() {
+        const totalTokens = state.tasks.reduce((sum, task) => sum + task.token_input + task.token_output, 0);
+        const totalCost = state.tasks.reduce((sum, task) => sum + task.cost_usd, 0);
+        $("#mTasks").textContent = state.tasks.length;
+        $("#mRunning").textContent = state.tasks.filter(task => task.status === "running").length;
+        $("#mTokens").textContent = totalTokens.toLocaleString();
+        $("#mCost").textContent = `$${totalCost.toFixed(2)}`;
+        $("#board").innerHTML = columns.map(col => {
+          const tasks = state.tasks.filter(task => col.stages.includes(stageOf(task)));
+          return `<section class="panel">
+            <div class="col-title"><span>${col.title}</span><span>${tasks.length}</span></div>
+            <div class="cards">${tasks.map(card).join("") || `<div class="meta">No tasks</div>`}</div>
+          </section>`;
+        }).join("");
+        renderDetail();
+      }
+      function card(task) {
+        const active = task.id === state.selectedId ? "active" : "";
+        return `<button class="card ${active}" onclick="selectTask(${task.id})">
+          <div class="card-title">#${task.github_issue_number} ${escapeHtml(task.title)}</div>
+          <div class="meta">${escapeHtml(task.repo)} · ${escapeHtml(task.status)} · ${escapeHtml(task.stage)}</div>
+          <div class="labels">${task.labels.map(label => `<span class="label">${escapeHtml(label)}</span>`).join("")}</div>
+        </button>`;
+      }
+      function renderDetail() {
+        const task = state.tasks.find(item => item.id === state.selectedId);
+        if (!task) return;
+        $("#detail").innerHTML = `<h2>#${task.github_issue_number} ${escapeHtml(task.title)}</h2>
+          <div class="meta">${escapeHtml(task.repo)} · ${escapeHtml(task.status)} · ${escapeHtml(task.stage)}</div>
+          <div class="actions">
+            <button onclick="queueDesign(${task.id})">Queue Design</button>
+            <button class="primary" onclick="approveDesign(${task.id})">Approve Design</button>
+            ${task.pr_url ? `<a href="${escapeHtml(task.pr_url)}" target="_blank"><button>Open PR</button></a>` : ""}
+          </div>
+          <div class="section-title">Request</div><div class="body">${escapeHtml(task.body || "No body")}</div>
+          <div class="section-title">Design</div><div class="design">${escapeHtml(task.design || "No design proposal yet")}</div>
+          <div class="section-title">Agent Usage</div>
+          <div class="meta">${task.token_input} input tokens · ${task.token_output} output tokens · $${task.cost_usd.toFixed(2)}</div>
+          <div class="section-title">Agents</div>
+          ${state.agents.map(agent => `<div class="agent-row"><div class="agent-name">${escapeHtml(agent.name)}</div><div class="meta">${escapeHtml(agent.status)} · $${agent.cost_usd.toFixed(2)}</div></div>`).join("") || `<div class="meta">No agents yet</div>`}
+          <div class="section-title">Events</div>
+          <div class="events">${state.selectedEvents.map(event => `<div class="event-row"><div>${escapeHtml(event.message)}</div><div class="event-meta">${escapeHtml(event.type)} · ${escapeHtml(event.created_at)}</div></div>`).join("")}</div>`;
+      }
+      function escapeHtml(value) {
+        return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+      }
+      const events = new EventSource("/api/events/stream");
+      events.addEventListener("delivery", () => refresh().catch(console.error));
+      events.onerror = () => { $("#connection").textContent = "Reconnecting"; };
+      refresh().catch(error => { $("#connection").textContent = error.message; });
+      window.selectTask = selectTask;
+      window.queueDesign = queueDesign;
+      window.approveDesign = approveDesign;
+    </script>
+  </body>
+</html>

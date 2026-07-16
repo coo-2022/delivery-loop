@@ -5,10 +5,12 @@ import json
 from pathlib import Path
 
 from delivery_loop.config import DEFAULT_CONFIG_PATH, default_config, load_config, save_config
+from delivery_loop.devseed import seed
 from delivery_loop.github import GitHubClient
 from delivery_loop.leases import LeaseManager
 from delivery_loop.models import RepoRef
 from delivery_loop.scheduler import Scheduler
+from delivery_loop.store import DEFAULT_DB_PATH, Store
 
 
 def cmd_init(args: argparse.Namespace) -> int:
@@ -36,6 +38,12 @@ def cmd_agent_list(args: argparse.Namespace) -> int:
     config = load_config(Path(args.config))
     for agent in config.agents:
         print(f"{agent.name}\t{','.join(agent.capabilities)}\t{agent.command}")
+    return 0
+
+
+def cmd_dev_seed(args: argparse.Namespace) -> int:
+    seed(Store(Path(args.db)))
+    print(f"seeded {args.db}")
     return 0
 
 
@@ -131,6 +139,12 @@ def build_parser() -> argparse.ArgumentParser:
     agents_sub = agents.add_subparsers(dest="agent_command", required=True)
     agents_list = agents_sub.add_parser("list")
     agents_list.set_defaults(func=cmd_agent_list)
+
+    dev = sub.add_parser("dev")
+    dev_sub = dev.add_subparsers(dest="dev_command", required=True)
+    dev_seed = dev_sub.add_parser("seed")
+    dev_seed.add_argument("--db", default=str(DEFAULT_DB_PATH))
+    dev_seed.set_defaults(func=cmd_dev_seed)
 
     return parser
 

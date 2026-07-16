@@ -3,6 +3,7 @@ __pycache__/
 .venv/
 .env
 delivery-loop.json
+.delivery-loop/
 .DS_Store
 .pytest_cache/
 .ruff_cache/
