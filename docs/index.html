@@ -551,9 +551,10 @@
         {
           owner: "coo-2022",
           name: "OpenEarth",
-          description: "First dogfood target project",
+          description: "Private dogfood target project",
           issueTemplate: "issues/new/choose",
           snapshot: "data/coo-2022-openearth.json",
+          private: true,
         },
       ];
 
@@ -827,6 +828,11 @@
       }
 
       async function refreshLiveRepo() {
+        if (state.repo.private) {
+          await loadRepo();
+          setStatus("ready", `Live refresh is disabled for private ${repoSlug()}; showing the latest published snapshot.`);
+          return;
+        }
         setStatus("loading", `Refreshing ${repoSlug()} from GitHub`);
         try {
           const [issues, pulls] = await Promise.all([

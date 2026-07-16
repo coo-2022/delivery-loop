@@ -19,7 +19,9 @@ It reads public GitHub issues and PRs directly from the GitHub API and shows:
 - Delivery Loop design proposal and implementation-plan comments;
 - related PRs.
 
-The dashboard loads `docs/data/*.json` snapshots first so the board is not empty when the browser cannot reach GitHub's API. The Refresh button attempts a live GitHub API refresh and keeps the snapshot visible if that request fails. `.github/workflows/update-dashboard-data.yml` refreshes the snapshots on a schedule.
+The dashboard loads `docs/data/*.json` snapshots first so the board is not empty when the browser cannot reach GitHub's API. For public repositories, the Refresh button can attempt a live GitHub API refresh. For private repositories such as `coo-2022/OpenEarth`, the static page cannot call GitHub with a token, so it only reads the published snapshot.
+
+`.github/workflows/update-dashboard-data.yml` refreshes the snapshots on a schedule. To read private managed repositories, add a repository secret named `DASHBOARD_GITHUB_TOKEN` with read access to those repositories.
 
 For GitHub Pages, configure this repository to publish from the `docs/` folder. Private repositories will need the future GitHub App/backend mode because the static page does not store tokens.
 
