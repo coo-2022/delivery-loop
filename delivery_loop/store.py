@@ -181,7 +181,16 @@ class Store:
                 (task_id, agent_id, stage, now),
             ).fetchone()
             run_id = int(row["id"])
-            conn.execute("update tasks set status = ?, stage = ?, updated_at = ? where id = ?", ("queued", stage, now, task_id))
+            if stage == "design":
+                conn.execute(
+                    "update tasks set status = ?, stage = ?, branch = '', pr_url = '', updated_at = ? where id = ?",
+                    ("queued", stage, now, task_id),
+                )
+            else:
+                conn.execute(
+                    "update tasks set status = ?, stage = ?, updated_at = ? where id = ?",
+                    ("queued", stage, now, task_id),
+                )
             self.add_event(conn, task_id, run_id, "run.queued", f"Queued {stage} run", {"agent": agent_name})
             return run_id
 
@@ -262,6 +271,11 @@ class Store:
     def approve_design(self, task_id: int, actor: str = "local-user") -> int:
         now = utc_now()
         with self.connect() as conn:
+            task = conn.execute("select status from tasks where id = ?", (task_id,)).fetchone()
+            if task is None:
+                raise ValueError(f"task {task_id} not found")
+            if task["status"] != "awaiting_approval":
+                raise ValueError("design approval is only allowed while task is awaiting_approval")
             conn.execute(
                 "update tasks set status = 'approved', stage = 'implementation', updated_at = ? where id = ?",
                 (now, task_id),
@@ -269,9 +283,18 @@ class Store:
             self.add_event(conn, task_id, None, "approval.design", f"Design approved by {actor}", {"actor": actor})
         return self.queue_run(task_id, "implementation")
 
+    def append_task_event(self, task_id: int, event_type: str, message: str, payload: dict[str, Any] | None = None) -> None:
+        with self.connect() as conn:
+            self.add_event(conn, task_id, None, event_type, message, payload or {})
+
     def list_repos(self) -> list[dict[str, Any]]:
         with self.connect() as conn:
             return [dict(row) for row in conn.execute("select * from repositories order by owner, name")]
+
+    def get_repo(self, repo_id: int) -> dict[str, Any] | None:
+        with self.connect() as conn:
+            row = conn.execute("select * from repositories where id = ?", (repo_id,)).fetchone()
+            return dict(row) if row else None
 
     def list_tasks(self) -> list[dict[str, Any]]:
         with self.connect() as conn:

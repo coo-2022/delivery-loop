@@ -9,6 +9,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse, StreamingResponse
 from pydantic import BaseModel
 
+from delivery_loop.github_sync import sync_repo_issues
 from delivery_loop.store import Store
 
 
@@ -50,6 +51,13 @@ def create_app(store: Store | None = None) -> FastAPI:
         repo_id = store.add_repo(repo.owner, repo.name, repo.visibility, repo.default_branch)
         return {"id": repo_id}
 
+    @app.post("/api/repos/{repo_id}/sync")
+    def sync_repo(repo_id: int) -> dict[str, int]:
+        try:
+            return sync_repo_issues(store, repo_id)
+        except ValueError as error:
+            raise HTTPException(status_code=404, detail=str(error)) from error
+
     @app.get("/api/tasks")
     def list_tasks() -> list[dict[str, Any]]:
         return store.list_tasks()
@@ -84,7 +92,10 @@ def create_app(store: Store | None = None) -> FastAPI:
     def approve_design(task_id: int) -> dict[str, Any]:
         if store.get_task(task_id) is None:
             raise HTTPException(status_code=404, detail="task not found")
-        return {"run_id": store.approve_design(task_id)}
+        try:
+            return {"run_id": store.approve_design(task_id)}
+        except ValueError as error:
+            raise HTTPException(status_code=409, detail=str(error)) from error
 
     @app.get("/api/agents")
     def list_agents() -> list[dict[str, Any]]:

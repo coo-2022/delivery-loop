@@ -117,7 +117,10 @@
         <h1>Delivery Loop Local</h1>
         <div class="sub">Backend coordinator, local worker, and dashboard running on this machine</div>
       </div>
-      <div class="status"><span class="dot"></span><span id="connection">Connected</span></div>
+      <div class="status">
+        <button onclick="syncAllRepos()">Sync GitHub</button>
+        <span class="dot"></span><span id="connection">Connected</span>
+      </div>
     </header>
     <div class="layout">
       <main>
@@ -168,9 +171,24 @@
         await refresh();
       }
       async function approveDesign(id) {
-        await api(`/api/tasks/${id}/approve-design`, { method: "POST" });
+        try {
+          await api(`/api/tasks/${id}/approve-design`, { method: "POST" });
+        } catch (error) {
+          $("#connection").textContent = "Approval rejected";
+          alert(error.message);
+          return;
+        }
         await refresh();
         await selectTask(id);
+      }
+      async function syncAllRepos() {
+        $("#connection").textContent = "Syncing GitHub";
+        const repos = await api("/api/repos");
+        for (const repo of repos) {
+          await api(`/api/repos/${repo.id}/sync`, { method: "POST" });
+        }
+        $("#connection").textContent = "Connected";
+        await refresh();
       }
       function render() {
         const totalTokens = state.tasks.reduce((sum, task) => sum + task.token_input + task.token_output, 0);
@@ -203,7 +221,7 @@
           <div class="meta">${escapeHtml(task.repo)} · ${escapeHtml(task.status)} · ${escapeHtml(task.stage)}</div>
           <div class="actions">
             <button onclick="queueDesign(${task.id})">Queue Design</button>
-            <button class="primary" onclick="approveDesign(${task.id})">Approve Design</button>
+            <button class="primary" onclick="approveDesign(${task.id})" ${task.status === "awaiting_approval" ? "" : "disabled"}>Approve Design</button>
             ${task.pr_url ? `<a href="${escapeHtml(task.pr_url)}" target="_blank"><button>Open PR</button></a>` : ""}
           </div>
           <div class="section-title">Request</div><div class="body">${escapeHtml(task.body || "No body")}</div>
@@ -225,6 +243,7 @@
       window.selectTask = selectTask;
       window.queueDesign = queueDesign;
       window.approveDesign = approveDesign;
+      window.syncAllRepos = syncAllRepos;
     </script>
   </body>
 </html>

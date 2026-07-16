@@ -2,6 +2,7 @@ from pathlib import Path
 
 from delivery_loop.server import create_app
 from delivery_loop.store import Store
+from delivery_loop.worker import run_once
 
 
 def test_server_registers_core_routes(tmp_path: Path) -> None:
@@ -20,6 +21,8 @@ def test_server_uses_supplied_store(tmp_path: Path) -> None:
     store = Store(tmp_path / "delivery.db")
     repo_id = store.add_repo("coo-2022", "demo")
     task_id = store.upsert_task(repo_id, 1, "Demo request")
+    store.queue_run(task_id, "design")
+    run_once(store, "local-agent")
     create_app(store)
 
     run_id = store.approve_design(task_id)
