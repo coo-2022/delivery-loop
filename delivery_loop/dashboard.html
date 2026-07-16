@@ -170,6 +170,11 @@
         await api(`/api/tasks/${id}/runs`, { method: "POST", body: JSON.stringify({ stage: "design" }) });
         await refresh();
       }
+      async function resetTask(id) {
+        await api(`/api/tasks/${id}/reset`, { method: "POST" });
+        await refresh();
+        await selectTask(id);
+      }
       async function approveDesign(id) {
         try {
           await api(`/api/tasks/${id}/approve-design`, { method: "POST" });
@@ -220,12 +225,18 @@
         $("#detail").innerHTML = `<h2>#${task.github_issue_number} ${escapeHtml(task.title)}</h2>
           <div class="meta">${escapeHtml(task.repo)} · ${escapeHtml(task.status)} · ${escapeHtml(task.stage)}</div>
           <div class="actions">
-            <button onclick="queueDesign(${task.id})">Queue Design</button>
-            <button class="primary" onclick="approveDesign(${task.id})" ${task.status === "awaiting_approval" ? "" : "disabled"}>Approve Design</button>
+            <button onclick="queueDesign(${task.id})" ${task.status === "new" || task.stage === "intake" ? "" : "disabled"}>Queue Design</button>
+            <button onclick="resetTask(${task.id})">Reset Demo</button>
             ${task.pr_url ? `<a href="${escapeHtml(task.pr_url)}" target="_blank"><button>Open PR</button></a>` : ""}
           </div>
           <div class="section-title">Request</div><div class="body">${escapeHtml(task.body || "No body")}</div>
-          <div class="section-title">Design</div><div class="design">${escapeHtml(task.design || "No design proposal yet")}</div>
+          ${task.status === "awaiting_approval" ? `
+            <div class="section-title">Design Review Required</div>
+            <div class="design">${escapeHtml(task.design || "No design proposal yet")}</div>
+            <div class="actions"><button class="primary" onclick="approveDesign(${task.id})">Approve Design And Start Implementation</button></div>
+          ` : `
+            <div class="section-title">Design</div><div class="design">${escapeHtml(task.design || "No design proposal yet")}</div>
+          `}
           <div class="section-title">Agent Usage</div>
           <div class="meta">${task.token_input} input tokens · ${task.token_output} output tokens · $${task.cost_usd.toFixed(2)}</div>
           <div class="section-title">Agents</div>
@@ -243,6 +254,7 @@
       window.selectTask = selectTask;
       window.queueDesign = queueDesign;
       window.approveDesign = approveDesign;
+      window.resetTask = resetTask;
       window.syncAllRepos = syncAllRepos;
     </script>
   </body>

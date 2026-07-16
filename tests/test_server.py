@@ -14,6 +14,7 @@ def test_server_registers_core_routes(tmp_path: Path) -> None:
     assert "/api/repos" in paths
     assert "/api/tasks" in paths
     assert "/api/tasks/{task_id}/approve-design" in paths
+    assert "/api/tasks/{task_id}/reset" in paths
     assert "/api/events/stream" in paths
 
 

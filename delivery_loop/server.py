@@ -97,6 +97,14 @@ def create_app(store: Store | None = None) -> FastAPI:
         except ValueError as error:
             raise HTTPException(status_code=409, detail=str(error)) from error
 
+    @app.post("/api/tasks/{task_id}/reset")
+    def reset_task(task_id: int) -> dict[str, str]:
+        try:
+            store.reset_task_to_intake(task_id)
+        except ValueError as error:
+            raise HTTPException(status_code=404, detail=str(error)) from error
+        return {"status": "reset"}
+
     @app.get("/api/agents")
     def list_agents() -> list[dict[str, Any]]:
         return store.list_agents()

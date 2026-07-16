@@ -283,6 +283,23 @@ class Store:
             self.add_event(conn, task_id, None, "approval.design", f"Design approved by {actor}", {"actor": actor})
         return self.queue_run(task_id, "implementation")
 
+    def reset_task_to_intake(self, task_id: int) -> None:
+        now = utc_now()
+        with self.connect() as conn:
+            task = conn.execute("select id from tasks where id = ?", (task_id,)).fetchone()
+            if task is None:
+                raise ValueError(f"task {task_id} not found")
+            conn.execute(
+                """
+                update tasks set status = 'new', stage = 'intake', design = '', branch = '', pr_url = '',
+                    token_input = 0, token_output = 0, cost_usd = 0, updated_at = ?
+                where id = ?
+                """,
+                (now, task_id),
+            )
+            conn.execute("delete from runs where task_id = ?", (task_id,))
+            self.add_event(conn, task_id, None, "task.reset", "Task reset to intake for local testing", {})
+
     def append_task_event(self, task_id: int, event_type: str, message: str, payload: dict[str, Any] | None = None) -> None:
         with self.connect() as conn:
             self.add_event(conn, task_id, None, event_type, message, payload or {})

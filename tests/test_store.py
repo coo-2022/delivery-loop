@@ -48,6 +48,25 @@ def test_approve_design_rejects_wrong_state(tmp_path: Path) -> None:
         raise AssertionError("approve_design should reject non-review tasks")
 
 
+def test_reset_task_to_intake_clears_execution_state(tmp_path: Path) -> None:
+    store = Store(tmp_path / "delivery.db")
+    repo_id = store.add_repo("coo-2022", "delivery-loop-hello-world")
+    task_id = store.upsert_task(repo_id, 1, "Add enthusiastic greeting mode")
+    store.queue_run(task_id, "design")
+    run_once(store, "local-agent")
+    store.approve_design(task_id)
+
+    store.reset_task_to_intake(task_id)
+
+    task = store.get_task(task_id)
+    assert task is not None
+    assert task["status"] == "new"
+    assert task["stage"] == "intake"
+    assert task["design"] == ""
+    assert task["branch"] == ""
+    assert task["pr_url"] == ""
+
+
 def test_worker_simulates_implementation_to_pr_review(tmp_path: Path) -> None:
     store = Store(tmp_path / "delivery.db")
     repo_id = store.add_repo("coo-2022", "other-project")
