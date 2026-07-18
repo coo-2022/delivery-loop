@@ -1,10 +1,32 @@
 {
-  "updated_at": "2026-07-18T10:58:36.307886+00:00",
+  "updated_at": "2026-07-18T11:55:49.411649+00:00",
   "repo": {
     "owner": "coo-2022",
     "name": "OpenEarth"
   },
   "issues": [
+    {
+      "number": 92,
+      "title": "[Request] 要支持CS模式",
+      "html_url": "https://github.com/coo-2022/OpenEarth/issues/92",
+      "body": "### 需求类型\n\nfeature\n\n### 影响域\n\nKnowledge\n\n### 期望优先级\n\nP1 - 重要功能或严重体验问题\n\n### 使用场景\n\n在团队使用的场景，需要C/S模式\n\n### 期望结果\n\n期望实现客户端逻辑\n\n### 参考信息\n\n_No response_",
+      "labels": [],
+      "user": {
+        "login": "coo-2022",
+        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
+      }
+    },
+    {
+      "number": 91,
+      "title": "[Request] 现在的轨迹日志文件有冗余，最好切换成给人和agent看的markdown+meta.json，这样便于看，且不丢信息",
+      "html_url": "https://github.com/coo-2022/OpenEarth/issues/91",
+      "body": "### 需求类型\n\nusability\n\n### 影响域\n\nOther\n\n### 期望优先级\n\nP2 - 常规功能或改进\n\n### 使用场景\n\n在用户查看各个域agent的日志的时候\n\n### 期望结果\n\n期望人和agent在不需要meta信息的时候可以只看markdown，更易读；同时保留meta.json\n\n### 参考信息\n\n_No response_",
+      "labels": [],
+      "user": {
+        "login": "coo-2022",
+        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
+      }
+    },
     {
       "number": 67,
       "title": "每个域骨架有了之后，具体细节的优化，就靠openearth来自举",
