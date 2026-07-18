@@ -1,10 +1,21 @@
 {
-  "updated_at": "2026-07-18T11:55:49.411649+00:00",
+  "updated_at": "2026-07-18T13:08:31.856712+00:00",
   "repo": {
     "owner": "coo-2022",
     "name": "OpenEarth"
   },
   "issues": [
+    {
+      "number": 93,
+      "title": "[Request] 要支持代码库解析",
+      "html_url": "https://github.com/coo-2022/OpenEarth/issues/93",
+      "body": "### 需求类型\n\nfeature\n\n### 影响域\n\nKnowledge\n\n### 期望优先级\n\nP1 - 重要功能或严重体验问题\n\n### 使用场景\n\n在研发场景，一般都有代码库，对代码库的理解，实际上也是知识的一部分\n\n### 期望结果\n\n预期对代码库的理解要保存到知识上下文中\n\n### 参考信息\n\n可以参考业界是如何做的",
+      "labels": [],
+      "user": {
+        "login": "coo-2022",
+        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
+      }
+    },
     {
       "number": 92,
       "title": "[Request] 要支持CS模式",
@@ -106,6 +117,17 @@
     }
   ],
   "pulls": [
+    {
+      "number": 94,
+      "title": "Release 0.2.0 function-skill runtime",
+      "html_url": "https://github.com/coo-2022/OpenEarth/pull/94",
+      "body": "## Summary\n- move domain behavior into Knowledge/Skills functions and domain-local skills\n- add mailbox routing, Skills proposal worktrees, and cross-domain Knowledge -> Skills E2E coverage\n- switch user config to YAML with shared domain_agent and domains.active\n- bump package version to 0.2.0\n\n## Validation\n- python -m ruff check openearth tests benchmark\n- python -c \"import pytest,sys; sys.exit(pytest.main(['-q','tests/test_config.py','tests/test_run_cli.py','tests/test_curator.py','tests/test_experience_functions.py','tests/test_mailbox.py','tests/test_domain_agent.py','tests/test_logging.py','tests/test_knowledge.py','tests/test_knowledge_ingest.py']))\"\n- python -c \"import pytest,sys; sys.exit(pytest.main(['-q','tests/test_experience_server.py']))\" (non-sandbox; socket creation is blocked in sandbox)\n- python benchmark/Knowledge/evaluate.py --suite mini --dry-run\n- python -m build",
+      "state": "open",
+      "user": {
+        "login": "coo-2022",
+        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
+      }
+    },
     {
       "number": 71,
       "title": "feat(memory): AGFS memory plane + unified evolution lifecycle (default-frozen, opt-in)",
