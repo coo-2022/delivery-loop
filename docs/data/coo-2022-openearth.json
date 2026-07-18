@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-07-18T08:17:08.552656+00:00",
+  "updated_at": "2026-07-18T09:54:07.041545+00:00",
   "repo": {
     "owner": "coo-2022",
     "name": "OpenEarth"
@@ -84,17 +84,6 @@
     }
   ],
   "pulls": [
-    {
-      "number": 89,
-      "title": "Harden Knowledge maintenance and E2E coverage",
-      "html_url": "https://github.com/coo-2022/OpenEarth/pull/89",
-      "body": "## Summary\n- Add per-domain E2E test directories, with Knowledge covering file/folder/web ingest, docx/pptx/xlsx/pdf, multimodal figures, topic links, and disambiguation.\n- Update Knowledge benchmark runner to avoid stale pages-updated semantics.\n- Fix Knowledge maintenance artifacts: strip embedded frontmatter before writing pages and deduplicate open pending questions across repeated maintenance/report outputs.\n- Clarify curator maintenance docs and remove unreachable stale batch code.\n\n## Real E2E Notes\n- Ingested docs/OpenEarth-领导汇报.pptx through the Knowledge daemon into /tmp/oe-pptx-real-e2e-kimi/store.\n- Verified raw document plus 10 slide figures in manifest/object-cache.\n- Verified generated Knowledge page answers version question.\n- opencode failure root cause: model must use provider/model form. newapi/kimi-for-coding works; bare kimi-for-coding and stale kimi-for-coding/k2p* fail.\n\n## Tests\n- python -m ruff check tests/e2e benchmark/Knowledge/evaluate.py\n- python -c \"import pytest,sys; sys.exit(pytest.main(['-q','tests/e2e']))\"\n- python -c \"import pytest,sys; sys.exit(pytest.main(['-q','tests/test_curator.py','tests/test_knowledge.py','tests/test_knowledge_queue.py']))\"\n- python benchmark/Knowledge/evaluate.py --suite mini --dry-run --no-baseline\n",
-      "state": "open",
-      "user": {
-        "login": "coo-2022",
-        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
-      }
-    },
     {
       "number": 71,
       "title": "feat(memory): AGFS memory plane + unified evolution lifecycle (default-frozen, opt-in)",
