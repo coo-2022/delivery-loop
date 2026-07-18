@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-07-18T15:51:55.806928+00:00",
+  "updated_at": "2026-07-18T16:52:29.225171+00:00",
   "repo": {
     "owner": "coo-2022",
     "name": "OpenEarth"
@@ -117,17 +117,6 @@
     }
   ],
   "pulls": [
-    {
-      "number": 94,
-      "title": "Release 0.2.0 function-skill runtime",
-      "html_url": "https://github.com/coo-2022/OpenEarth/pull/94",
-      "body": "## Summary\n- move domain behavior into Knowledge/Skills functions and domain-local skills\n- add mailbox routing, Skills proposal worktrees, and cross-domain Knowledge -> Skills E2E coverage\n- switch user config to YAML with shared domain_agent and domains.active\n- bump package version to 0.2.0\n\n## Validation\n- python -m ruff check openearth tests benchmark\n- python -c \"import pytest,sys; sys.exit(pytest.main(['-q','tests/test_config.py','tests/test_run_cli.py','tests/test_curator.py','tests/test_experience_functions.py','tests/test_mailbox.py','tests/test_domain_agent.py','tests/test_logging.py','tests/test_knowledge.py','tests/test_knowledge_ingest.py']))\"\n- python -c \"import pytest,sys; sys.exit(pytest.main(['-q','tests/test_experience_server.py']))\" (non-sandbox; socket creation is blocked in sandbox)\n- python benchmark/Knowledge/evaluate.py --suite mini --dry-run\n- python -m build",
-      "state": "open",
-      "user": {
-        "login": "coo-2022",
-        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
-      }
-    },
     {
       "number": 71,
       "title": "feat(memory): AGFS memory plane + unified evolution lifecycle (default-frozen, opt-in)",
