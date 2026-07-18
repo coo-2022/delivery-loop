@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-07-18T00:53:14.868336+00:00",
+  "updated_at": "2026-07-18T03:51:51.648514+00:00",
   "repo": {
     "owner": "coo-2022",
     "name": "OpenEarth"
@@ -84,17 +84,6 @@
     }
   ],
   "pulls": [
-    {
-      "number": 87,
-      "title": "Fix/windows console flash and encoding2",
-      "html_url": "https://github.com/coo-2022/OpenEarth/pull/87",
-      "body": "",
-      "state": "open",
-      "user": {
-        "login": "coo-2022",
-        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
-      }
-    },
     {
       "number": 71,
       "title": "feat(memory): AGFS memory plane + unified evolution lifecycle (default-frozen, opt-in)",
