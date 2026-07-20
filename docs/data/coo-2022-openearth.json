@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-07-20T05:02:33.707247+00:00",
+  "updated_at": "2026-07-20T08:22:47.169541+00:00",
   "repo": {
     "owner": "coo-2022",
     "name": "OpenEarth"
@@ -117,17 +117,6 @@
     }
   ],
   "pulls": [
-    {
-      "number": 96,
-      "title": "Link domain v1 — C→S trajectory upload pipe",
-      "html_url": "https://github.com/coo-2022/OpenEarth/pull/96",
-      "body": "First slice of the Link domain (C/S trajectory sync): the **upload** direction (C → S).\n\n## What\n\n- **`experience/link/function/_link.py`** — the pipe: `connect` / `upload` / `disconnect` (C side) + `register_client` / `receive` / `mark_unlinked` (S side), runtime state I/O, light redaction, envelope packaging, content-sha256 dedup (local upload-log + server receive-log).\n- **`experience/link/server.py`** — S-side stdlib HTTP server (`/health` `/register` `/upload` `/unregister`) routing to the `_link` functions.\n- **`experience/link/__init__.py`** — CLI surface (`add_link_subparser` + `cmd_link` thin dispatcher).\n- **`tests/e2e/link/user_e2e.py`** — acceptance e2e (`LINK_E2E_OK`): 建链 / 同步 / 幂等 / 断链.\n\n## Design (locked this session)\n\n- **Domain split**: Trajectory collects from agents (unchanged); **Link only syncs what Trajectory already stored**, keeping its **own cursor** over the Trajectory store.\n- **C/S isomorphic, no role field** — behavior emerges from which Link functions run (capability trim).\n- **All Link state is gitignored runtime** under `Link/.meta/runtime/`: `connection.json` / `cursors.json` / `upload-log.jsonl` (C); `tokens.json` / `clients/<client_id>.json` / `receive-log.jsonl` (S). Trajectory content lands in the **Trajectory domain** (retrievable by traj_id).\n- **Framework untouched** — `store.py` / `experience/server.py` / `contracts` unchanged; `cli.py` gains only a one-line subparser registration + one-line route. No Link logic in the framework.\n\n## Verification\n\n- `ruff check .` clean; full `pytest -q` green.\n- e2e `tests/e2e/link/user_e2e.py` → `LINK_E2E_OK` (建链→clients active; 同步→S Trajectory 域收到 2 traj + content 一致 + cursor/log; 幂等→二次 upload 不重传; 断链→client unlinked). No model/LLM (deterministic plumbing).\n\n## Not in this PR (next)\n\n- Reverse sync S→C (Knowledge / Skills down) — to follow, test-first.\n- Redaction hardening (v1 is a light regex pass), daemon periodic-tick registration, `.meta/function/` materialization for agent invocation.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
-      "state": "open",
-      "user": {
-        "login": "coo-2022",
-        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
-      }
-    },
     {
       "number": 71,
       "title": "feat(memory): AGFS memory plane + unified evolution lifecycle (default-frozen, opt-in)",
