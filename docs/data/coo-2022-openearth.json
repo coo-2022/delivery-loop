@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-07-22T11:46:44.461112+00:00",
+  "updated_at": "2026-07-22T13:41:00.730582+00:00",
   "repo": {
     "owner": "coo-2022",
     "name": "OpenEarth"
@@ -117,6 +117,17 @@
     }
   ],
   "pulls": [
+    {
+      "number": 119,
+      "title": "fix: function write violations use baseline snapshot to avoid misattribution",
+      "html_url": "https://github.com/coo-2022/OpenEarth/pull/119",
+      "body": "## Problem\n\nThe function isolation check (`_function_write_violations`) scanned the entire repo via `git status` after a function ran, attributing ALL dirty files to that function. Pre-existing dirty files from another domain (e.g. Link upgrade writing `builtin-manifest.json` without committing) were falsely flagged as cross-domain writes, causing the curator loop to error on every iteration with:\n\n```\nRuntimeError: Experience function failed: Knowledge\\.meta\\function\\schedule-maintain\\run.py\nfunction wrote outside domains: Link/.meta/builtin-manifest.json\n```\n\n## Fix\n\nSnapshot dirty paths BEFORE the function runs (`_dirty_paths()`). Post-run violation checks (`_function_write_violations` and `_changed_domain_paths`) only consider NEW dirty files not in the baseline. Pre-existing dirt from other domains is correctly ignored. True cross-domain writes by the function itself are still caught.\n\n## Changes\n\n- `openearth/experience/functions.py`: Add `_dirty_paths()` helper; add `baseline` param to `_function_write_violations` and `_changed_domain_paths`; snapshot baseline before function execution\n- `tests/test_daemon_tick_lock.py`: Flip false-positive test to expect success; add positive test that real cross-domain writes are still caught\n\n## Test\n\n```\n30 passed in 35.66s (test_daemon_tick_lock + test_experience_functions)\n```",
+      "state": "open",
+      "user": {
+        "login": "coo-2022",
+        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
+      }
+    },
     {
       "number": 71,
       "title": "feat(memory): AGFS memory plane + unified evolution lifecycle (default-frozen, opt-in)",
