@@ -1,10 +1,21 @@
 {
-  "updated_at": "2026-07-23T06:14:52.557319+00:00",
+  "updated_at": "2026-07-23T09:06:10.850958+00:00",
   "repo": {
     "owner": "coo-2022",
     "name": "OpenEarth"
   },
   "issues": [
+    {
+      "number": 122,
+      "title": "[Request] 无法查看codeAgent当前会话轨迹内容",
+      "html_url": "https://github.com/coo-2022/OpenEarth/issues/122",
+      "body": "### 需求类型\n\nbug\n\n### 影响域\n\nTrajectory\n\n### 期望优先级\n\nP0 - 阻塞或数据风险\n\n### 使用场景\n\n无法查看codeAgent当前会话轨迹内容\n\n\n### 期望结果\n\n修复\n\n### 参考信息\n\n_No response_",
+      "labels": [],
+      "user": {
+        "login": "hkcao",
+        "avatar_url": "https://avatars.githubusercontent.com/u/47921350?v=4"
+      }
+    },
     {
       "number": 93,
       "title": "[Request] 要支持代码库解析",
