@@ -1,10 +1,32 @@
 {
-  "updated_at": "2026-07-27T06:25:07.694060+00:00",
+  "updated_at": "2026-07-27T10:25:39.097178+00:00",
   "repo": {
     "owner": "coo-2022",
     "name": "OpenEarth"
   },
   "issues": [
+    {
+      "number": 125,
+      "title": "简化 config:删除 analyst / judge / reflect,统一走 domain_agent",
+      "html_url": "https://github.com/coo-2022/OpenEarth/issues/125",
+      "body": "`config.py:DEFAULTS` 现在维护 4 个 LLM 角色段。`role_config` (config.py:190-202) 把角色分两类:optimizer 角色(`judge` / `reflect`)继承 `analyst` + 自身非空覆盖;domain 角色(`curator` / `skills` / `orchestrator`,见 `DOMAIN_AGENT_ROLES` config.py:26)走 `domain_agent`。\n\n对单机用户(不跑 train/eval,只用 Knowledge/Skills/Orchestrator 域服务)来说前 3 段是纯冗余 —— 4 段最终指向同一个 OpenAI 兼容端点,维护成本高,新手容易因 `analyst.model=''` 让 curator 报 `backend unavailable`。\n\n## 提议\n\n- 删除 `analyst` / `judge` / `reflect` 三段\n- optimizer 角色也走 `domain_agent`\n- `DEFAULTS` 只保留 `domain_agent` + `embedding` + `vlm`\n\n## 需先解决的约束\n\n1. **`reflect` 必须保留工具能力。** `reflect` 默认 `base_url: \"opencode\"` 是刻意的 —— 它是会工具的 agent,要读 Experience store + 写 SKILL.md,只有 opencode backend 提供 bash/write 工具。`domain_agent` 默认 `agent_backend: pydantic-ai`,直接合并会让 reflect 退化成无工具的一次性 LLM 调用,**静默产出 0 技能**(config.py:46-50 已有注释警告)。合并前需让 `domain_agent` 区分「带工具 / 不带工具」两种 backend,或让 reflect 显式保留 backend 选择。\n\n2. **与 AGENTS.md §1 冲突。** §1「optimizer ≠ target / 三个独立角色各自配各自模型」是承重原则。合并后需同步更新 AGENTS.md §1 与 §8 的措辞。\n",
+      "labels": [],
+      "user": {
+        "login": "coo-2022",
+        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
+      }
+    },
+    {
+      "number": 124,
+      "title": "简化 config:删除 analyst / judge / reflect,统一走 domain_agent",
+      "html_url": "https://github.com/coo-2022/OpenEarth/issues/124",
+      "body": "`config.py:DEFAULTS` 现在维护 4 个 LLM 角色段。`role_config` (config.py:190-202) 把角色分两类:optimizer 角色(`judge` / `reflect`)继承 `analyst` + 自身非空覆盖;domain 角色(`curator` / `skills` / `orchestrator`,见 `DOMAIN_AGENT_ROLES` config.py:26)走 `domain_agent`。\n\n对单机用户(不跑 train/eval,只用 Knowledge/Skills/Orchestrator 域服务)来说前 3 段是纯冗余 —— 4 段最终指向同一个 OpenAI 兼容端点,维护成本高,新手容易因 `analyst.model=''` 让 curator 报 `backend unavailable`。\n\n## 提议\n\n- 删除 `analyst` / `judge` / `reflect` 三段\n- optimizer 角色也走 `domain_agent`\n- `DEFAULTS` 只保留 `domain_agent` + `embedding` + `vlm`\n\n## 需先解决的约束\n\n1. **`reflect` 必须保留工具能力。** `reflect` 默认 `base_url: \"opencode\"` 是刻意的 —— 它是会工具的 agent,要读 Experience store + 写 SKILL.md,只有 opencode backend 提供 bash/write 工具。`domain_agent` 默认 `agent_backend: pydantic-ai`,直接合并会让 reflect 退化成无工具的一次性 LLM 调用,**静默产出 0 技能**(config.py:46-50 已有注释警告)。合并前需让 `domain_agent` 区分「带工具 / 不带工具」两种 backend,或让 reflect 显式保留 backend 选择。\n\n2. **与 AGENTS.md §1 冲突。** §1「optimizer ≠ target / 三个独立角色各自配各自模型」是承重原则。合并后需同步更新 AGENTS.md §1 与 §8 的措辞。",
+      "labels": [],
+      "user": {
+        "login": "coo-2022",
+        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
+      }
+    },
     {
       "number": 122,
       "title": "[Request] 无法查看codeAgent当前会话轨迹内容",
