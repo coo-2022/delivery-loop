@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-07-28T10:56:31.313441+00:00",
+  "updated_at": "2026-07-28T12:52:50.424073+00:00",
   "repo": {
     "owner": "coo-2022",
     "name": "OpenEarth"
@@ -139,6 +139,17 @@
     }
   ],
   "pulls": [
+    {
+      "number": 145,
+      "title": "fix(upgrade): use pythonw.exe intermediary to avoid conhost windows",
+      "html_url": "https://github.com/coo-2022/OpenEarth/pull/145",
+      "body": "cmd /c start /B breaks the process tree but cmd.exe is a console program that spawns conhost.exe windows.\n\nReplace with a transient pythonw.exe intermediary (GUI subsystem, no console): it spawns the target with full detach flags then exits, orphaning the target so taskkill /T on the daemon cannot find it.\n\nAlso add CREATE_NO_WINDOW to the pip subprocess.run call to suppress any console window from pip's child processes.\n\nVerified: daemon taskkill /T /F kills itself, target survives (tree broken), conhost count unchanged (no windows).",
+      "state": "open",
+      "user": {
+        "login": "coo-2022",
+        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
+      }
+    },
     {
       "number": 71,
       "title": "feat(memory): AGFS memory plane + unified evolution lifecycle (default-frozen, opt-in)",
