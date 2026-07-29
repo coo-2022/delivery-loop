@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-07-29T08:32:21.081206+00:00",
+  "updated_at": "2026-07-29T11:21:18.947010+00:00",
   "repo": {
     "owner": "coo-2022",
     "name": "OpenEarth"
@@ -139,6 +139,17 @@
     }
   ],
   "pulls": [
+    {
+      "number": 150,
+      "title": "refactor(config): unify analyst/reflect/judge into domain_agent",
+      "html_url": "https://github.com/coo-2022/OpenEarth/pull/150",
+      "body": "## Summary\n\nUnify the three redundant LLM config sections (`analyst`, `reflect`, `judge`) into the single `domain_agent` section. All LLM-backed roles now share one config entry point.\n\n## Motivation\n\nPreviously the config had 7 LLM-related sections: `analyst`, `reflect`, `judge`, `domain_agent`, `embedding`, `vlm`, `run`. The first three were redundant — `analyst` was a shared fallback that `reflect`/`judge` inherited from, and `domain_agent` was already the shared config for curator/skills/orchestrator. This created confusion: users had to understand which section applied to which role, and the `analyst` section was often left empty while `domain_agent` held the real config.\n\n## Changes\n\n### `config.py`\n- Delete `analyst`, `reflect`, `judge` from DEFAULTS\n- `role_config()` reads `domain_agent` for ALL roles (curator, skills, orchestrator, reflect, judge)\n- reflect's implementation defaults (`base_url=\"opencode\"`, `tools=True`, `temperature=0.2`, `max_tokens=1024`) are injected by `role_config()`, not user-configured — they are an implementation contract (reflect needs the opencode tool-using backend), not a user preference\n- `embedding`/`vlm` `api_key_env` → `OPENEARTH_DOMAIN_AGENT_KEY` (was `OPENEARTH_ANALYST_KEY`, which no longer exists in DEFAULTS)\n- `resolve_api_key()` fallback env var → `OPENEARTH_DOMAIN_AGENT_KEY`\n\n### `cli.py`\n- diagnosis/textgame agents read `domain_agent` instead of `analyst` for endpoint fallback\n- Error messages updated: \"needs config.analyst\" → \"needs config.domain_agent\"\n- `_analyst()` docstring and warning messages updated\n\n### Tests\n- `test_config.py`: 4 new tests replace 2 deleted ones:\n  - `test_all_roles_read_domain_agent` — all 5 roles share domain_agent\n  - `test_reflect_gets_implementation_defaults` — reflect defaults injected\n  - `test_reflect_defaults_when_domain_agent_empty` — defaults even with empty config\n  - `test_judge_does_not_get_reflect_defaults` — judge is a plain LLM, no tools/opencode\n- `test_config.py`: `test_defaults_when_no_file` Windows path fix (`\\` vs `/`)\n- `test_domain_llm_config.py`: removed `analyst` section references\n\n## What's NOT changed\n- `Analyst` class and `analyst=` parameter in `run_train`/`BranchEvolutionLoop` — code-level concepts (the optimizer object), not config\n- `embedding`, `vlm`, `run` — independent config sections, unchanged\n- `PHASE1_INIT_CONFIG` — already had no analyst/reflect/judge\n\n## Test results\n82 tests pass (test_config + test_domain_llm_config + test_curator + test_reflect_batch + test_diagnosis_env + test_branch_loop). 4 pre-existing Windows failures unrelated to this change (symlink permissions, GBK encoding, HOME monkeypatch).\n",
+      "state": "open",
+      "user": {
+        "login": "coo-2022",
+        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
+      }
+    },
     {
       "number": 71,
       "title": "feat(memory): AGFS memory plane + unified evolution lifecycle (default-frozen, opt-in)",
