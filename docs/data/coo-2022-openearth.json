@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-01T13:45:13.507790+00:00",
+  "updated_at": "2026-08-01T14:56:14.178655+00:00",
   "repo": {
     "owner": "coo-2022",
     "name": "OpenEarth"
@@ -139,6 +139,17 @@
     }
   ],
   "pulls": [
+    {
+      "number": 156,
+      "title": "feat: mailbox-driven native CLI Tool domain",
+      "html_url": "https://github.com/coo-2022/OpenEarth/pull/156",
+      "body": "## Summary\n- replace the Tool execution gateway with mailbox-driven Tool Agent management and independent CLI exposure\n- add editable Tool Skills/Functions, per-agent Skill projection, and complete agent trajectory capture\n- install the built-in Tool manager Skill for supported agents\n- construct and verify read-only bb-browser providers before registration, including real Zhihu hot acceptance coverage\n- bump package version to 0.4.6\n\n## Verification\n- full pytest suite passes\n- Ruff passes\n- git diff check passes\n- real gh user E2E passes\n- real bb-browser + zhihu/hot flow passes: request, verification, projection, direct Agent call, answer\n- wheel/sdist build passes and contains Tool Skill, provider, Function, and mailbox client",
+      "state": "open",
+      "user": {
+        "login": "coo-2022",
+        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
+      }
+    },
     {
       "number": 71,
       "title": "feat(memory): AGFS memory plane + unified evolution lifecycle (default-frozen, opt-in)",
