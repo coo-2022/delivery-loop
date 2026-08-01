@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-01T06:24:16.307330+00:00",
+  "updated_at": "2026-08-01T08:38:51.888408+00:00",
   "repo": {
     "owner": "coo-2022",
     "name": "OpenEarth"
@@ -139,6 +139,17 @@
     }
   ],
   "pulls": [
+    {
+      "number": 154,
+      "title": "fix: close httpx.AsyncClient after each pydantic-ai run to prevent FD/thread leak",
+      "html_url": "https://github.com/coo-2022/OpenEarth/pull/154",
+      "body": "## Root Cause\n\n\\PydanticAIBackend._build_agent()\\ created a new \\httpx.AsyncClient\\ on every \\\run()\\ call but never closed it. When the GC finaliser collected the unclosed client, it spun up a **new asyncio event loop** (with its own \\ThreadPoolExecutor\\) to run \\\u0007close()\\, leaking ~3 FDs (socketpair + eventpoll) and 1 worker thread per call.\n\n## Symptoms\n\nOn the server daemon (\\interval=60s\\, running ~2 days), this accumulated to:\n- **338 leaked \\\u0007syncio_0\\ threads** (confirmed via \\py-spy dump\\)\n- **1019 FDs** (677 sockets + 338 eventpolls + 4 regular)\n- Hit the **1024 soft ulimit** → \\OSError: [Errno 24] Too many open files\\\n- Document uploads (\\/upload/document\\) failed with HTTP 500\n\n## Fix\n\nSplit client creation out of \\_build_agent()\\ into \\_create_clients()\\, store the \\httpx.AsyncClient\\ reference in \\\run()\\, and call \\_close_clients()\\ in the \\\finally\\ block to properly run \\\u0007close()\\ on the **same event loop** that was used for \\\run_sync()\\ — no new event loop created, no leaked threads.\n\n\\\\\\\nrun() flow:\n  _create_clients()  →  httpx.AsyncClient + AsyncOpenAI\n  _build_agent(openai_client=...)  →  Agent (no client creation inside)\n  agent.run_sync(...)\n  finally:\n    _close_clients(http_client)  →  loop.run_until_complete(http_client.aclose())\n\\\\\\\n\n## Changes\n\n- \\openearth/agent/pydantic_ai_backend.py\\: split \\_build_agent\\, add \\_create_clients\\/\\_close_clients\\, call close in \\\finally\\\n- \\\tests/test_domain_agent.py\\: 3 new tests (close after run, close on exception, noop on None) + fix existing monkeypatch\n- Version bump: 0.4.4 → 0.4.5",
+      "state": "open",
+      "user": {
+        "login": "coo-2022",
+        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
+      }
+    },
     {
       "number": 71,
       "title": "feat(memory): AGFS memory plane + unified evolution lifecycle (default-frozen, opt-in)",
