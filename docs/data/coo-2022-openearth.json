@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-03T02:24:23.529217+00:00",
+  "updated_at": "2026-08-03T05:56:17.742259+00:00",
   "repo": {
     "owner": "coo-2022",
     "name": "OpenEarth"
@@ -139,6 +139,17 @@
     }
   ],
   "pulls": [
+    {
+      "number": 157,
+      "title": "feat: daemon-mounted web dashboard (FastAPI + React SPA)",
+      "html_url": "https://github.com/coo-2022/OpenEarth/pull/157",
+      "body": "## 概述\n\n把 OpenEarth 从纯 CLI 系统变成 **daemon 自动拉起的 Web 应用**：后端新增 FastAPI 服务（替代并删除旧 stdlib `openearth serve`），前端从零构建 React SPA（替代并删除旧单页 HTML dashboard）。`openearth service start` 后浏览器开 `http://127.0.0.1:8917/` 即用。\n\n**核心域逻辑零改动** —— 见下方\"核心零改动\"。\n\n## 改动结构\n\n\\`\\`\\`\nopenearth service start\n  └─ daemon\n       └─ ui 服务 (uvicorn :8917)\n            ├─ /api/v1/*          ← agent PULL API（rollout 按分支读技能，逐字节平移自旧 server.py）\n            ├─ /api/ui/*          ← dashboard 数据 + sources 动作\n            ├─ /api/lineage/*     ← 血缘图\n            ├─ /api/runs          ← 任务发射台（唯一新写路径，子进程）\n            ├─ /api/runs/{id}/events ← SSE 实时进度\n            ├─ /api/daemon/status ← daemon + ui 状态\n            ├─ /api/analysis/*    ← 可视化分析聚合（新）\n            ├─ /api/memory        ← 记忆搜索（新）\n            └─ / + /assets        ← React SPA（新）\n\\`\\`\\`\n\n## 后端（Python）\n\n- **新增 \\`openearth/web/\\` 包**（FastAPI）：app 工厂 + daemon 挂载（\\`ensure_ui_serve\\`，幂等，bind 失败不崩 daemon）+ 全局错误信封（KeyError→404，其他→500 \\`{\"error\"}\\`）；\\`/b/<branch>\\` 前缀中间件；8 个 router（pull/ui/lineage/runs/daemon/analysis/memory）+ run 注册表 + SSE tail。\n- **删除 \\`openearth/experience/server.py\\`**（旧 stdlib 服务）—— 删除前用 13/13 的 parity 测试证明新旧逐端点等价（含 OV envelope、分支作用域、\\`memories\\` 缺省等契约细节）。\n- **CLI（\\`cli.py\\`）**：删 \\`openearth serve\\` 命令；\\`cmd_daemon\\` 加 \\`ui\\` 服务自动拉起 web；\\`--live-file\\` 参数；\\`_sources_once\\` 把旧 \\`serve --collect\\` 的定时知识拉取（\\`collect_all\\`）迁移进 daemon tick，**避免功能回退**；daemon/service \\`--only\\` 加 \\`ui\\`。\n- **\\`progress.py\\`**：新增 \\`LiveSink\\`（事件落盘 JSONL）+ \\`fanout\\`（组合 on_event）—— SSE 实时进度的数据源。**既有 \\`Progress\\` 渲染逻辑一行未动**。\n- **依赖**：pyproject 加 fastapi/uvicorn；dev 加 httpx（TestClient）。\n\n## 前端（\\`ui/\\`，全新）\n\nVite + React 18 + TypeScript + Tailwind + ECharts，构建产物 → \\`openearth/web/static/\\`（打进 wheel，pip 用户无需 node）。\n\n- 双主题（light/dark）Context，赭橙 \\`#D96B4F\\` 唯一强调色，无闪烁，localStorage 持久化\n- 字体本地化（Inter + JetBrains Mono，离线优先，不走 CDN）\n- 全端点类型化客户端 + \\`useSSE\\` + \\`useAsync\\`（generation counter 防轮询 stale 覆盖）\n- **8 个页面**：概览（run 横幅+SSE / 统计 / ECharts 趋势 / 门禁漏斗 / 分支泳道 / 最近轨迹）、运行（发射台抽屉 + run 详情 SSE）、血缘（双泳道 SVG 演化图）、技能、轨迹（环图+step 时间线）、知识（topic 树）、记忆（搜索）、分析（4 ECharts）\n\n## 核心零改动（已用 git 核实）\n\n下列核心域及其交互逻辑**一行都没动**：\n\n\\`\\`\\`\nexperience/{skills,trajectory,knowledge,orchestrator,gitstore,tool}\noptimizer/  trainer/（gate 引擎）  agent/  contracts/  environment/\nconfig.py  llm.py  logging.py  daemon_service.py  install.py\n\\`\\`\\`\n\n即 **飞轮（fork→probe→reflect→gate→merge）、门禁引擎、curator、轨迹摄取、五域 git store、agent runtime** 原封不动。\\`experience/\\` 下仅有的 4 处改动都不是域逻辑：删 \\`server.py\\`、删 \\`ui/*.html\\`、\\`link/server.py\\` 3 行注释。这是**纯增量 + 展示层替换**改动。\n\n## 验证\n\n- Python 测试 **617 passed / 0 failures**（旧→新 parity 13/13 等价后才删旧代码）\n- \\`npm run build\\` 通过，tsc strict 全绿\n- wheel 打包含 static 资产、无旧 HTML\n- **生产 daemon**（\\`service start\\` 拉起）浏览器实测：\\`/\\` 返回 React 应用、客户端路由、暗色主题切换、8 页全部渲染、**0 JS 错误**\n- 过程中修复的关键问题：Windows pid 探测（os.kill 在 Windows 是 TerminateProcess）、锁统一（in-daemon 用 DomainLock 而非 exp._lock，避免与 curator 竞态）、SSE 终止语义、useAsync 轮询竞态、暗色 FOUC\n\n## 文档\n\n- \\`docs/superpowers/specs/2026-07-31-web-ui-design.md\\`（设计 spec）\n- \\`docs/superpowers/plans/2026-07-31-web-ui-backend.md\\` + \\`2026-08-02-web-ui-frontend.md\\`（实现计划）\n- \\`docs/superpowers/prototypes/2026-08-01-overview-hifi-v3.html\\`（高保真原型，8 页可点）\n\n## 破坏性变更\n\n- \\`openearth serve\\` 命令删除 —— web 服务统一由 \\`openearth service start\\` 在 daemon 内拉起（同端口 8917）。\n- \\`python -m openearth.experience.server\\` 模块入口删除。\n\n## Test Plan\n\n- [ ] \\`openearth service start\\` → 浏览器开 \\`http://127.0.0.1:8917/\\` 看到 React 应用\n- [ ] 8 个侧边栏页面可点切换、双主题切换正常\n- [ ] \\`POST /api/runs\\` 能发起 run（如 diagnosis eval），\\`/api/runs/{id}/events\\` SSE 流出实时事件\n- [ ] agent rollout 仍能经 \\`/b/<branch>/api/v1/search/find\\` 拉技能（PULL API parity）\n- [ ] \\`pytest tests/\\` 全绿\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+      "state": "open",
+      "user": {
+        "login": "coo-2022",
+        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
+      }
+    },
     {
       "number": 71,
       "title": "feat(memory): AGFS memory plane + unified evolution lifecycle (default-frozen, opt-in)",
