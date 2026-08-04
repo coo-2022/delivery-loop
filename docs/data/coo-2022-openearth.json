@@ -1,10 +1,21 @@
 {
-  "updated_at": "2026-08-04T11:02:24.257098+00:00",
+  "updated_at": "2026-08-04T13:14:41.561798+00:00",
   "repo": {
     "owner": "coo-2022",
     "name": "OpenEarth"
   },
   "issues": [
+    {
+      "number": 161,
+      "title": "feat(C/S): 支持 Client 使用本地模型或 Agent 执行 Curator 推理",
+      "html_url": "https://github.com/coo-2022/OpenEarth/issues/161",
+      "body": "## 背景\n\n当前 C/S 模式下，完整演化能力主要运行在 Server，Knowledge Curator 等 Agent 的模型调用也由 Server 承担。但很多 Client 设备本身已经具备可用的大模型能力：\n\n- 本地运行了 OpenAI-compatible API；\n- 安装并配置了 opencode 等可执行 Agent；\n- Client 已经持有原始文档，本地完成推理还能减少文档上传、服务端模型并发和调用成本。\n\n因此需要允许 Server 将适合的 Curator 推理任务调度给 Client 的本地模型执行，同时仍由 Server 负责全局调度、状态管理、结果校验和 Experience 演化。\n\n## 目标\n\n在 C/S 模式下支持 Client 配置并注册本地推理能力，至少覆盖两类 backend：\n\n1. **本地 API 模型**\n   - Client 配置 `agent_backend: pydantic-ai`、本地 `base_url`、`model` 和本地密钥引用；\n   - Curator 通过 Client 本地 OpenAI-compatible API 执行。\n2. **本地 Agent backend**\n   - Client 配置 `agent_backend: opencode` 或后续其它 Agent backend；\n   - 直接使用本地 Agent 作为 Curator runtime，保留 skill 自主发现和工具调用能力。\n\n## 建议执行链路\n\n1. Client 连接 Server 时上报本地 Curator runtime 能力：backend 类型、模型标识、是否支持工具/skill/VLM、并发上限和当前可用状态；不得上传 API key。\n2. Server 收到用户文档任务后仍创建统一 mailbox/job，并根据调度策略决定在 Client 本地或 Server 执行。\n3. 选择 Client 时，Server 下发任务描述、所需 skill 版本和受控 Function/Tool 能力；原始文件已经位于 Client 时优先本地读取。\n4. Client 本地 Curator 执行抽取、图片理解、编译等模型步骤，持续回报 running/progress/heartbeat。\n5. Client 上传结构化结果、provenance、轨迹和必要产物；Server 校验任务版本、输入 hash 和结果 schema 后提交到对应域。\n6. Client 不可用、超时或能力不满足时，根据配置回退 Server，且保持同一 job_id 和幂等语义。\n\n## 配置与调度\n\n建议支持：\n\n- `client.curator.enabled`：是否允许本地执行；\n- `client.curator.agent_backend`：`pydantic-ai` / `opencode` / 后续 backend；\n- `client.curator.model`、`base_url`、`api_key` 或 `api_key_env`：仅保存在 Client；\n- `client.curator.max_concurrency`；\n- `server.curator.routing`：`client-preferred` / `server-only` / `client-only`；\n- `server.curator.fallback_to_server`：Client 失败时是否回退。\n\n最终字段应复用现有 AgentBackend/DomainAgent 配置抽象，不为 C/S 再造一套模型配置协议。\n\n## 关键约束\n\n- Server 是调度和最终状态的权威来源；Client 本地模型只是可替换的执行节点。\n- API key、opencode 凭据和本地模型连接信息不得发送到 Server。\n- Client 只能执行用户明确授权的 Curator Function/Tool 范围，Server 不得借任务下发任意 shell 命令。\n- 任务必须包含 input hash、skill/function 版本和执行 attempt，支持幂等、超时、取消、重试和断线恢复。\n- 本地执行产生的模型响应、工具调用、环境反馈和错误必须进入现有日志/轨迹 schema。\n- 首期聚焦 Knowledge Curator，但协议应能扩展到 Skills、Memory、Tool、Orchestrator 等域 Agent。\n\n## 验收标准\n\n- [ ] Client 可配置本地 OpenAI-compatible API 并完成一次真实 Knowledge 文档入库。\n- [ ] Client 可配置 opencode backend 并完成同一流程。\n- [ ] Server 能发现 Client 能力并按 `client-preferred` 路由任务。\n- [ ] Client 模型不可用时能按配置回退 Server，job_id 不变且不会重复产出。\n- [ ] Client 密钥不会出现在注册信息、Server 日志、任务 payload 或轨迹中。\n- [ ] 支持并发上限、heartbeat、超时、取消和断线恢复。\n- [ ] Server 对 Client 回传结果做 schema、input hash 和版本校验后再提交 Experience。\n- [ ] 增加 standalone、C/S 本地 API、C/S opencode、fallback 四类 E2E。\n- [ ] 压力测试证明 Client 本地推理能降低 Server 模型调用量，并且不会阻塞 daemon/link tick。\n",
+      "labels": [],
+      "user": {
+        "login": "coo-2022",
+        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
+      }
+    },
     {
       "number": 125,
       "title": "简化 config:删除 analyst / judge / reflect,统一走 domain_agent",
