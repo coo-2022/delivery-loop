@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-06T02:23:07.990464+00:00",
+  "updated_at": "2026-08-06T05:31:28.144200+00:00",
   "repo": {
     "owner": "coo-2022",
     "name": "OpenEarth"
@@ -161,17 +161,6 @@
     }
   ],
   "pulls": [
-    {
-      "number": 171,
-      "title": "test: add release-gate checklist + user-facing smoke suite",
-      "html_url": "https://github.com/coo-2022/OpenEarth/pull/171",
-      "body": "## 目的\n\n每次发版前必须防回归。当前只有开发态单测(CI \\pytest -q\\),缺少**用户视角功能测试**和**长稳测试**。新增一整套分门别类的发版必测用例,作为打 tag 前的硬 gate。\n\n## 改动\n\n1. **\\docs/release-test-checklist.md\\**(新增)— 用户视角必测清单,按场景分 10 类:\n   - 安装初始化 / C/S 同步 / 知识库 / 技能 / 轨迹 / HTTP·UI / 升级 / 平台 / **长稳 soak(≥8h)** / 门禁小结\n   - 每条标注「自动化/人工」+ 通过条件\n\n2. **\\\tests/test_release_smoke.py\\**(新增)— 可自动化的用户视角 smoke 套件,全部标 \\@pytest.mark.release\\ 及子类目(standalone/doc/skill/trajectory/http/upgrade/platform/soak):\n   - install 内置 client skill(openearth-doc/tool-manager)\n   - doc submit→status(本地队列)\n   - builtin sync 刷新非 Link 域(守护此前修复)\n   - 同版本 no-op gate\n   - trajectory put/readback\n   - HTTP health + branches\n   - subprocess guard\n\n3. **\\pyproject.toml\\** — 注册 release 等 10 个 marker(支持 \\-m release\\ 及按类过滤)\n\n4. **\\.github/workflows/release.yml\\** — 发布前新增硬 gate \\pytest -m release -q\\,失败即不发布\n\n5. **\\AGENTS.md\\** §11 — 发版规则要求打 tag 前过 checklist\n\n## 验证\n\n- \\python -m pytest -m release -q\\ → 7 passed, 1 skipped(soak 占位,真实 soak 需人工 ≥8h)\n- marker 注册无误、与现有单测无回归\n\n## 门禁关系\n\n自动化用例由 \\-m release\\ 承载(CI 强制);长稳 soak 是人工清单(docs §9)。",
-      "state": "open",
-      "user": {
-        "login": "coo-2022",
-        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
-      }
-    },
     {
       "number": 158,
       "title": "docs: rewrite README client setup — cross-platform, precheck, troubleshooting",
