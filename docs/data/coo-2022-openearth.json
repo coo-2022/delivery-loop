@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-07T04:36:02.820251+00:00",
+  "updated_at": "2026-08-07T06:06:32.056943+00:00",
   "repo": {
     "owner": "coo-2022",
     "name": "OpenEarth"
@@ -161,17 +161,6 @@
     }
   ],
   "pulls": [
-    {
-      "number": 175,
-      "title": "feat: unified connector — Tool domain packages, confirmation gate, MCP bridge, source binding",
-      "html_url": "https://github.com/coo-2022/OpenEarth/pull/175",
-      "body": "按 `docs/unified-connector-design.md` 实现统一 connector（数据源与工具接入归一）。\n\n## M1：connector 包 + 调用 + 确认门\n\n- **`tool/connector.py`** — 包格式（connector.yaml）+ loader：capability 四标注（readOnly/destructive/idempotent/openWorld，悲观默认）；凭证强制 `env:`/`file:` 引用；store 包覆盖 builtin 包\n- **`tool/invoke.py`** — 唯一执行路径：read 直跑；openWorld 写挂起 pending（fail-closed）除非白名单；`run.script`（JSON stdin/stdout）/ `run.argv`（无 shell 插值）/ `run.mcp_tool`；凭证调用时解析经 `OE_CRED_*` 传递\n- **`tool/gate.py`** — 确认门：pending 持久化（TTL 600s，超时/拒绝 fail-closed）、confirm 严格一次、审计 jsonl、**git 追踪的信任白名单**（`--always` 确认衰减）、preview 脱敏\n- **`tool/shims.py` + `invoke_cli.py`** — `~/.openearth/bin/oe-<name>` 独立 CLI（agent 调用面，不嵌套）\n- **`openearth tool`** CLI：list/doc/pending/confirm/deny/sync\n- **`usage_skill.py`** — openearth-tools client skill 动态渲染（渐进披露），materialize 时刷新\n\n## 内置 connector + 数据源绑定\n\n- `builtin_connectors/`：zhihu/twitter/reddit（bb_bridge.py 桥接 bb-browser，绕开 Node 64KB 截断坑）\n- `DataConnector/connector_source.py`：connector read capability 接入现有调度管线（cursor/去重/编译不动），RawItem 归一化与 BrowserSource **逐项等价**（有测试）\n- `openearth source add --connector <name> --capability <cap>`：Knowledge 侧绑定（源配置仍是 Knowledge 资产，按名引用 Tool 域 connector，不跨界写）\n- kb-add-source.md 重写：先查 tool list → 有则直接 bind，无则 mailbox 请 Tool 域构造后再 bind\n\n## 接入流程（接入验证即 gate）\n\n- `function/_connector.py`：put_connector（结构校验 + 每个可验证 read 真实调用，全过才 commit，失败整包不入库）、validate_connector（写能力只做静态校验）、remove_connector；自动刷 shim/skill\n- manage-tools.md 按 connector 模型重写（随 sync_builtins 分发给老 store）\n\n## MCP 桥（M2 起步）\n\n- `mcp_client.py`：纯 stdio JSON-RPC 客户端（initialize/call/list）\n- `run.mcp_tool` + `requires.mcp_server` 桥接调用\n- `mcp_introspect.py`：tools/list → connector.yaml 草稿，**MCP annotations 直接继承**为四标注（缺省悲观兜底）\n\n## 实机端到端验收（全过）\n\n| 场景 | 结果 |\n|---|---|\n| S1 无工具→构造→验证→安装→确认→执行 | github connector 经 gate 构造（坏包正确拒绝）；push 写 pending 时远端为空、confirm 后真实推送成功、审计落库 ✅ |\n| S2 拉知乎最新 | `oe-zhihu hot_list` 真实返回 20 条热榜 ✅ |\n| S3 作者文章 mount 到知识库 | `source add --connector zhihu --capability search --arg query=李博杰` → 9 篇真实文章入 object-cache，二次运行去重 ✅ |\n| S4 查看列表 | `tool list/doc` + openearth-tools skill ✅ |\n\n验收抓出并修复 6 个真实 bug（invoke_cli 导入错误、桥脚本拷贝漂移、zhihu/hot 命令名、bb 0.14 result 包裹导致 `_items` 塌缩——顺带修了 legacy BrowserSource、CLI 平铺参数、confirm 裸 traceback）。\n\n## 验证\n\n- 新增 31 项测试；全量套件 **687 通过 0 失败**；ruff + subprocess 门禁干净（桥脚本按 stdlib-only 例外登记）\n- 确认门全链路单测锁死：一次性/过期/拒绝/白名单/审计/脱敏\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
-      "state": "open",
-      "user": {
-        "login": "coo-2022",
-        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
-      }
-    },
     {
       "number": 158,
       "title": "docs: rewrite README client setup — cross-platform, precheck, troubleshooting",
