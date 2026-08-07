@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-07T09:56:53.254141+00:00",
+  "updated_at": "2026-08-07T10:52:05.276060+00:00",
   "repo": {
     "owner": "coo-2022",
     "name": "OpenEarth"
@@ -161,17 +161,6 @@
     }
   ],
   "pulls": [
-    {
-      "number": 178,
-      "title": "fix: carry server version+package on pull bundle so connected clients auto-upgrade",
-      "html_url": "https://github.com/coo-2022/OpenEarth/pull/178",
-      "body": "## 问题\n\n已在线 client 无法自动升级。追查代码后确认这是**设计未实现**的缺口，而非我早期猜测的\"注册后才取版本\"。\n\n设计(`tests/e2e/link/upgrade_e2e.py` 验收第 4 条)明确要求:\n\n> **\"C 的 pull bundle `server.package` 块携带同样的版本信息 (tick 通知通道)\"**\n> ```python\n> # after `openearth link pull`:\n> assert (upgrade_json.get(\"package\") or {}).get(\"version\") == NEWVER\n> ```\n\n即:client 每个周期 `pull`(`/sync/` 同步)时,服务器应在 bundle 里携带当前 `server_version` + `package`,client 把它写进 `upgrade.json`,这样周期 `tick_auto → upgrade_available` 就能比较版本并触发自升级。\n\n**但实现没有接这一环**:\n- 服务器 `build_bundle`(`/sync/{domain}` 响应)只返回 bundle_id/entries/revision...,**没有** `server_version` / `package`。\n- client `domain_sync.pull` 只读 entries/bundle_id/revision,**从不写 `upgrade.json`**。\n- `record_server_info` 只在 `connect()`(注册)调用一次,所以 `upgrade.json` 永远是**注册那天的旧快照**(server_version 旧、package None)。\n\n结果:即使 `tick_auto` 周期跑,`upgrade_available` 读的 `upgrade.json` 永不刷新 → 永远短路(None),client 只 nag、不自动升级。这是\"鸡生蛋\"的死结。\n\n## 改动\n\n**服务器侧(`domain_sync.build_bundle`)**:\n- 每个 `/sync/{domain}` bundle 现在带 notify 块:`server_version`、`min_client_version`、以及分发 manifest 的 `package`(当有缓存 wheel 时)。\n- 省资源:直接读已落盘的 `dist/manifest.json` 缓存,**不**每 tick 重扫/哈希 wheel。\n\n**client 侧(`domain_sync.pull` → `_notify_version`)**:\n- pull 时把服务器通告的版本/package 经 `_link.record_server_info` 写进 `upgrade.json`。\n- **磁盘寿命保护**:仅当通告的 `server_version` 与本地记录不一致时才写文件;稳定 daemon 每 tick 是 no-op,不重写。\n\n另保留 `/register` 带 package 的改动:让**新注册/重启重连**的 client 也能在注册时直接拿到 package。\n\n## 测试\n\n- `tests/test_domain_sync_http.py`:`test_pull_tick_notify_records_server_version_only_when_changed` —— 首次 pull 写入(server_version + package),二次 pull 同版本不重写(mtime 不变,验证磁盘保护)。\n- `tests/test_link_handshake.py`:`test_register_client_carries_server_manifest_package` —— `/register` 响应带 manifest,manifest 异常时 package=None 且注册不失败。\n- 相关套件(link_handshake/auto_upgrade/domain_sync_http/upgrade_*/link_flows/link_clients/lock_granularity/daemon_service)全绿;ruff + `tools/check_raw_subprocess.py` 门禁通过。\n- 唯一残余失败 `test_redact_masks_secrets_paths_and_identity` 为 pre-existing Windows `Path.home()` 环境问题(clean main 可复现),与本次无关。\n\n## 说明\n\n- 服务器 `/sync/` 现在携带 version/package,让运行**本代码**的 client 周期刷新 `upgrade.json` 并自升级。\n- 对**已经在线的 0.4.10 client**:它们的老代码既不会重注册、也不读 sync 通知,仍需在 client 侧跑一次 `openearth upgrade`(或重启 Link daemon)才能真正升级;本改动确保它们一旦运行新代码即可走通此通道。\n",
-      "state": "open",
-      "user": {
-        "login": "coo-2022",
-        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
-      }
-    },
     {
       "number": 158,
       "title": "docs: rewrite README client setup — cross-platform, precheck, troubleshooting",
