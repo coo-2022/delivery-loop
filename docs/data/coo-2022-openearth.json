@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-10T12:07:27.474020+00:00",
+  "updated_at": "2026-08-10T13:53:30.201813+00:00",
   "repo": {
     "owner": "coo-2022",
     "name": "OpenEarth"
@@ -161,17 +161,6 @@
     }
   ],
   "pulls": [
-    {
-      "number": 180,
-      "title": "fix: suppress stale sync-ack logging + add link.log rotation",
-      "html_url": "https://github.com/coo-2022/OpenEarth/pull/180",
-      "body": "## Problem\n\nClient ticks every 5s and re-acks the last sync bundle on every tick. ~98% of acks are `stale` (bundle already delivered), but the old code logged every ack unconditionally.\n\nIn production (~2 weeks, 2 active clients): link.log reached **37MB / 156k lines**, of which **135k (88%) were stale-noise** `http_domain_sync_ack` lines — growing unbounded with no rotation.\n\n## Fix\n\n1. **`server.py`**: Only log `http_domain_sync_ack` when `status == \"accepted\"` — stale acks (the vast majority) are silently suppressed. This mirrors the existing pattern on `http_domain_sync` (GET handler already gates on `entries or blocked or has_more`).\n\n2. **`_link.py`**: Add 10MB rotation to `_append_jsonl` (keep `.1`) as defense-in-depth, so no future high-frequency event can grow the log unbounded.\n\n3. **`test_domain_sync_http.py`**: New `test_sync_ack_does_not_log_stale` — verifies accepted ack logs, stale ack does not.\n\n## Verification\n\n- Standalone test confirmed: 2 min of live client ticks → 0 stale lines logged (was ~47/2min), log size 37MB → 2.2KB\n- Deployed to production server, verified healthy (0 errors, all clients ticking normally)\n- `ruff check` passed, `tools/check_raw_subprocess.py` passed\n",
-      "state": "open",
-      "user": {
-        "login": "coo-2022",
-        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
-      }
-    },
     {
       "number": 158,
       "title": "docs: rewrite README client setup — cross-platform, precheck, troubleshooting",
