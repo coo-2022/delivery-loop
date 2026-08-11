@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-11T06:58:29.254735+00:00",
+  "updated_at": "2026-08-11T08:11:18.673224+00:00",
   "repo": {
     "owner": "coo-2022",
     "name": "OpenEarth"
@@ -161,6 +161,17 @@
     }
   ],
   "pulls": [
+    {
+      "number": 181,
+      "title": "fix: normalize path separators in find_session_id for Windows",
+      "html_url": "https://github.com/coo-2022/OpenEarth/pull/181",
+      "body": "## Problem\n\nOn Windows, every rollout trajectory had \\steps=[]\\ — the agent executed real work (read code, grep, write diagnosis.json) but nothing was harvested into the trajectory.\n\n## Root cause\n\n\\\tempfile.mkdtemp()\\ returns backslash paths on Windows (e.g. \\C:\\\\Users\\\\N00655~1\\\\...\\\\oe-diag-xxx\\), but opencode's Node layer stores session directories with forward slashes in the SQLite DB (e.g. \\C:/Users/n00655240/.../oe-diag-xxx\\). \\\find_session_id\\ does a SQL exact-match (\\WHERE directory=?\\), so the backslash path never matched the forward-slash DB entry → session not found → \\steps=[]\\.\n\n## Fix\n\nAdd \\_norm_dir()\\ to normalize \\\\\\\\ → \\/\\ before each SQL lookup in \\\find_session_id\\. Also deduplicate candidate paths (short path and realpath may normalize to the same value) to avoid redundant queries.\n\nVerified against 14 leftover per-rollout DBs — all sessions now resolve correctly.\n\n## Files changed\n\n- \\openearth/agent/opencode_store.py\\ — \\_norm_dir\\ + dedup in \\\find_session_id\\\n- \\\tests/test_opencode.py\\ — \\\test_opencode_store_harvest_separator_mismatch\\ (backslash path vs forward-slash DB entry)",
+      "state": "open",
+      "user": {
+        "login": "coo-2022",
+        "avatar_url": "https://avatars.githubusercontent.com/u/38957465?v=4"
+      }
+    },
     {
       "number": 158,
       "title": "docs: rewrite README client setup — cross-platform, precheck, troubleshooting",
