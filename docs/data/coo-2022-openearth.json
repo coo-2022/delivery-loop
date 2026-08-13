@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-13T11:03:20.455825+00:00",
+  "updated_at": "2026-08-13T12:07:46.988559+00:00",
   "repo": {
     "owner": "coo-2022",
     "name": "OpenEarth"
@@ -161,6 +161,17 @@
     }
   ],
   "pulls": [
+    {
+      "number": 182,
+      "title": "feat(memory): add controlled MetaMemory vendor ports",
+      "html_url": "https://github.com/coo-2022/OpenEarth/pull/182",
+      "body": "## Summary\n\nThis PR adds the first vendor-style MetaMemory integration on top of `coo-2022/OpenEarth:main`.\n\nIt exposes three stable integration surfaces:\n\n1. memory recall\n2. append-only versioned mutation and logical tombstone\n3. certificate-gated release and serving acknowledgement\n\n## Scope\n\n- Adds strict Pydantic contracts and runtime-checkable ports under `openearth/experience/memory_integration`.\n- Adds a narrow vendored runtime under `openearth/_vendor/metamemory_runtime`, with an exact manifest and source hashes.\n- Defaults to SHADOW and fails closed for invalid, expired, mismatched, or replayed certificates.\n- Keeps ACTIVE serving-head updates transactional with compare-and-swap semantics.\n- Adds restart, idempotency, rollback, snapshot-identity, and transport-security tests.\n\n## Deliberate non-scope\n\nThis PR does not merge the experimental `feat/memory-integration` or `feat/memory-integration-opencode` branches wholesale. It does not add the full AGFS proposer/evaluator daemon, future-window evaluation, or experimental control plane. Research logs, benchmark payloads, internal handoffs, and patent materials are not included.\n\n## CI validation\n\n- `ruff check .` passes.\n- `tools/check_raw_subprocess.py` passes.\n- MetaMemory integration tests pass.\n- Existing experience ports/server regression tests pass.\n\nPlease review the public contracts and vendor boundary first; deeper daemon integration can be proposed separately after this interface is accepted.",
+      "state": "open",
+      "user": {
+        "login": "ziming-dev",
+        "avatar_url": "https://avatars.githubusercontent.com/u/298514409?v=4"
+      }
+    },
     {
       "number": 158,
       "title": "docs: rewrite README client setup — cross-platform, precheck, troubleshooting",
